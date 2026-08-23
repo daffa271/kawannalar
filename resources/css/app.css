@@ -1,1 +1,84 @@
 @import "tailwindcss";
+
+/* ─────────────────────────────────────────────
+   KawanNalar — Custom Theme (Tailwind v4)
+   Warna Brand:
+     primary   #0A52C4  Deep Blue
+     cta       #F28C28  Orange (CTA button)
+     accent    #FFC000  Yellow
+     surface   #F4F7FA  Light Background
+     navy      #0F1F3D  Dark Navy (footer)
+   ───────────────────────────────────────────── */
+
+@theme {
+    --color-primary: #0a52c4;
+    --color-primary-dark: #0842a0;
+    --color-primary-light: #1e5fbf;
+
+    --color-cta: #f28c28;
+    --color-cta-dark: #e07d1c;
+    --color-cta-light: #f5a04a;
+
+    --color-accent: #ffc000;
+    --color-accent-dark: #e6ac00;
+
+    --color-surface: #f4f7fa;
+    --color-navy: #0f1f3d;
+
+    --font-sans:
+        "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, sans-serif;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.015em;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #f4f7fa;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+::selection {
+    background: rgba(10, 82, 196, 0.15);
+    color: #0a52c4;
+}
+
+:focus-visible {
+    outline: 2px solid #0a52c4;
+    outline-offset: 2px;
+}
+
+@layer components {
+    .field-label {
+        @apply mb-1.5 block text-xs font-bold text-gray-700;
+    }
+
+    .field-input {
+        @apply w-full rounded-xl border border-gray-200 bg-[#F4F7FA] px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 transition focus:border-[#0A52C4] focus:outline-none focus:ring-2 focus:ring-[#0A52C4]/20;
+    }
+
+    .field-error {
+        @apply mt-1 text-xs text-red-600;
+    }
+}
