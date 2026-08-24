@@ -3,18 +3,18 @@ $user = auth()->user();
 $name = $user?->name ?? 'Pengguna';
 $initials = collect(explode(' ', trim($name)))->filter()->take(2)->map(fn ($part) => strtoupper(substr($part, 0, 1)))->join('');
 $role = $user?->role ?? 'siswa';
-$studentXp = $user?->studentProfile?->xp ?? 1250;
+$studentXp = $user?->xp ?? $user?->studentProfile?->xp ?? 1250;
 $studentGrade = $user?->studentProfile?->grade ?? '';
 $mentorUniversity = $user?->mentorProfile?->university ?? 'Mentor';
 $profileSubtitle = match ($role) {
-'mentor' => $mentorUniversity,
-'admin' => 'Inovator KawanNalar',
-default => 'Siswa ' . trim($studentGrade),
+    'mentor' => $mentorUniversity,
+    'admin' => 'Inovator KawanNalar',
+    default => $studentGrade ? 'Siswa ' . trim($studentGrade) : 'Siswa',
 };
 $roleBadge = match ($role) {
-'mentor' => '<span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/60 bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-800"><span>👨‍🏫</span> Mentor Verified</span>',
-'admin' => '<span class="inline-flex items-center gap-1.5 rounded-full border border-blue-200/60 bg-blue-50 px-3 py-1.5 text-[11px] font-semibold text-blue-800"><span>⚡</span> Admin System</span>',
-default => '<span class="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-50 px-3.5 py-1.5 text-[11px] font-bold text-amber-900 shadow-sm"><span>🏆</span> ' . number_format($studentXp) . ' XP</span>',
+    'mentor' => '<span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/60 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-800"><span>👨‍🏫</span> Mentor Verified</span>',
+    'admin' => '<span class="inline-flex items-center gap-1.5 rounded-full border border-blue-200/60 bg-blue-50 px-2.5 py-1 text-[10px] font-semibold text-blue-800"><span>⚡</span> Admin System</span>',
+    default => '<span class="inline-flex items-center gap-1.5 rounded-full border border-amber-200/60 bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-900 shadow-sm"><span>🏆</span> ' . number_format($studentXp) . ' XP</span>',
 };
 @endphp
 
@@ -27,9 +27,9 @@ default => '<span class="inline-flex items-center gap-2 rounded-full border bord
                 </svg>
             </button>
 
-            <a href="{{ route('dashboard') }}" class="flex shrink-0 items-center gap-3">
+            <a href="{{ route('dashboard') }}" class="flex shrink-0 items-center gap-2 md:gap-3">
                 <img src="{{ asset('images/logokawannalar.jpeg') }}" alt="Logo KawanNalar" class="h-9 w-9 rounded-xl object-cover md:h-10 md:w-10">
-                <span class="text-lg font-extrabold tracking-[-0.03em] text-[#0A52C4] md:text-xl">Kawan<span class="text-[#F28C28]">Nalar</span></span>
+                <span class="hidden text-lg font-extrabold tracking-[-0.03em] text-[#0A52C4] sm:inline md:text-xl">Kawan<span class="text-[#F28C28]">Nalar</span></span>
             </a>
         </div>
 
@@ -45,19 +45,19 @@ default => '<span class="inline-flex items-center gap-2 rounded-full border bord
 
         <div class="ml-auto flex items-center gap-2 md:gap-3 lg:gap-4">
             @if ($role === 'siswa')
-            <div class="flex items-center gap-1.5 rounded-full border border-amber-200/60 bg-amber-50 px-2.5 py-1.5 text-amber-900 shadow-sm sm:px-3.5">
+            <div class="hidden sm:flex items-center gap-1.5 rounded-full border border-amber-200/60 bg-amber-50 px-2.5 py-1.5 text-amber-900 shadow-sm sm:px-3.5">
                 <span class="text-sm md:text-base">🏆</span>
-                <span class="hidden text-[11px] font-bold sm:inline md:text-sm">{{ number_format($studentXp) }} XP</span>
+                <span class="text-[11px] font-bold md:text-sm">{{ number_format($studentXp) }} XP</span>
             </div>
             @elseif ($role === 'mentor')
-            <div class="flex items-center gap-1.5 rounded-full border border-emerald-200/60 bg-emerald-50 px-2.5 py-1.5 text-emerald-800 shadow-sm">
+            <div class="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-200/60 bg-emerald-50 px-2.5 py-1.5 text-emerald-800 shadow-sm">
                 <span>👨‍🏫</span>
-                <span class="hidden text-[11px] font-semibold sm:inline">Mentor Verified</span>
+                <span class="text-[11px] font-semibold">Mentor Verified</span>
             </div>
             @else
-            <div class="flex items-center gap-1.5 rounded-full border border-blue-200/60 bg-blue-50 px-2.5 py-1.5 text-blue-800 shadow-sm">
+            <div class="hidden sm:flex items-center gap-1.5 rounded-full border border-blue-200/60 bg-blue-50 px-2.5 py-1.5 text-blue-800 shadow-sm">
                 <span>⚡</span>
-                <span class="hidden text-[11px] font-semibold sm:inline">Admin System</span>
+                <span class="text-[11px] font-semibold">Admin System</span>
             </div>
             @endif
 
@@ -98,7 +98,10 @@ default => '<span class="inline-flex items-center gap-2 rounded-full border bord
                 <div x-show="profileOpen" x-cloak @click.away="profileOpen = false" class="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl">
                     <div class="border-b border-slate-100 px-4 py-3">
                         <p class="truncate text-sm font-bold text-slate-800">{{ $name }}</p>
-                        <p class="truncate text-xs text-slate-500">{{ $user?->email }}</p>
+                        <p class="truncate text-xs text-slate-500 mb-2">{{ $user?->email }}</p>
+                        <div class="mt-1.5">
+                            {!! $roleBadge !!}
+                        </div>
                     </div>
                     <a href="{{ route('profile.edit') }}" class="block px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-50">Profil Saya</a>
                     <form method="POST" action="{{ route('logout') }}" class="border-t border-slate-100">

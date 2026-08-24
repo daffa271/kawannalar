@@ -34,10 +34,28 @@ $items = $isStudent ? [
                 <div class="relative flex h-12 w-12 items-center justify-center rounded-full bg-[#0A52C4] text-lg font-extrabold text-white ring-4 ring-[#0A52C4]/10">{{ strtoupper(substr($firstName, 0, 1)) }}<span class="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#F28C28] text-[9px]">✎</span></div>
                 <div class="min-w-0">
                     <p class="truncate font-extrabold text-gray-900">{{ $firstName }}</p>
-                    <p class="truncate text-xs text-gray-500">{{ $user?->studentProfile?->school ?? ucfirst($role) }}</p>
+                    <p class="truncate text-xs text-gray-500">
+                        @if ($role === 'siswa')
+                            {{ $user?->studentProfile?->school ?? 'Siswa KawanNalar' }}
+                        @elseif ($role === 'mentor')
+                            {{ $user?->mentorProfile?->university ?? 'Mentor KawanNalar' }}
+                        @else
+                            Inovator KawanNalar
+                        @endif
+                    </p>
                 </div>
             </div>
-            <a href="{{ route('profile.edit') }}" class="mt-4 inline-flex rounded-lg border border-[#0A52C4]/20 px-3 py-1.5 text-xs font-bold text-[#0A52C4] hover:bg-[#0A52C4]/5">{{ $user?->studentProfile?->grade ?? 'Lengkapi profil' }} <span class="ml-2">›</span></a>
+            <a href="{{ route('profile.edit') }}" class="mt-4 inline-flex rounded-lg border border-[#0A52C4]/20 px-3 py-1.5 text-xs font-bold text-[#0A52C4] hover:bg-[#0A52C4]/5">
+                @if ($role === 'siswa')
+                    {{ $user?->studentProfile?->grade ?? 'Lengkapi profil' }}
+                @elseif ($role === 'mentor')
+                    Verified Mentor
+                @else
+                    Admin System
+                @endif
+                <span class="ml-2">›</span>
+            </a>
+
         </div>
 
         <nav class="flex-1 overflow-y-auto px-4 py-5">
