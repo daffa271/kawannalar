@@ -1,7 +1,7 @@
 {{--
     Navbar publik: Landing Page, Login, Register.
-    Logo + Menu navigasi + Tombol Masuk / Daftar Gratis.
-    Sticky, clean white bg, menggunakan warna brand #0A52C4 & #F28C28.
+    Menu: Beranda | Fitur | Tentang Kami | Testimoni | Hubungi Kami
+    CTA: Masuk (outline) | Daftar (blue-600 primary)
 --}}
 <header
     x-data="{
@@ -21,32 +21,30 @@
         <a href="{{ route('landing') }}" class="flex h-12 w-[138px] shrink-0 items-center group lg:h-14" aria-label="KawanNalar - Beranda">
             <img
                 src="{{ asset('images/logokawannalar.jpeg') }}"
-                alt="KawanNalar - Belajar Bersama, Raih Impian"
+                alt="KawanNalar"
                 class="h-full w-full object-contain transition-transform duration-200 group-hover:scale-[1.02]">
         </a>
 
         {{-- Desktop Nav --}}
         <nav class="hidden lg:flex items-center gap-6 xl:gap-8 text-xs xl:text-sm font-medium text-gray-600">
-            <a href="{{ route('landing') }}" class="text-primary font-semibold hover:text-primary-dark transition-colors">Beranda</a>
-            <a href="#fitur" class="hover:text-primary transition-colors">Fitur</a>
-            <a href="#tentang" class="hover:text-primary transition-colors">Tentang Kami</a>
-            <a href="#" class="hover:text-primary transition-colors">Untuk Sekolah</a>
-            <a href="#" class="hover:text-primary transition-colors">Jejak Nalar</a>
-            <a href="#" class="hover:text-primary transition-colors">Kabar Nalar</a>
+            <a href="#" class="text-blue-600 font-semibold hover:text-blue-700 transition-colors">Beranda</a>
+            <a href="#fitur" class="hover:text-blue-600 transition-colors">Fitur</a>
+            <a href="#tentang-kami" class="hover:text-blue-600 transition-colors">Tentang Kami</a>
+            <a href="#testimoni" class="hover:text-blue-600 transition-colors">Testimoni</a>
+            <a href="#hubungi-kami" class="hover:text-blue-600 transition-colors">Hubungi Kami</a>
         </nav>
 
         {{-- Desktop CTA --}}
         <div class="hidden lg:flex items-center gap-3">
             <a
                 href="{{ route('login') }}"
-                class="px-5 py-2.5 rounded-lg border border-primary/40 text-primary text-xs xl:text-sm font-semibold hover:border-primary hover:bg-primary/5 transition-all">
+                class="px-5 py-2.5 rounded-lg border border-blue-600/40 text-blue-600 text-xs xl:text-sm font-semibold hover:border-blue-600 hover:bg-blue-50 transition-all">
                 Masuk
             </a>
             <a
                 href="{{ route('register') }}"
-                class="px-5 py-2.5 rounded-lg bg-cta text-white text-xs xl:text-sm font-semibold hover:bg-cta-dark transition-all shadow-sm hover:shadow-md"
-                style="box-shadow: 0 2px 8px rgba(242,140,40,0.35);">
-                Daftar Gratis
+                class="px-5 py-2.5 rounded-lg bg-blue-600 text-white text-xs xl:text-sm font-semibold hover:bg-blue-700 transition-all shadow-sm hover:shadow-md">
+                Daftar
             </a>
         </div>
 
@@ -81,17 +79,17 @@
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-2"
         class="lg:hidden border-t border-gray-100 bg-white px-6 py-5 flex flex-col gap-4">
-        <a href="{{ route('landing') }}" class="text-[#0A52C4] font-semibold py-1">Beranda</a>
-        <a href="#fitur" class="text-gray-600 hover:text-[#0A52C4] py-1">Fitur</a>
-        <a href="#tentang" class="text-gray-600 hover:text-[#0A52C4] py-1">Tentang Kami</a>
-        <a href="#" class="text-gray-600 hover:text-[#0A52C4] py-1">Jejak Nalar</a>
-        <a href="#" class="text-gray-600 hover:text-[#0A52C4] py-1">Kabar Nalar</a>
+        <a href="#" class="text-[#0A52C4] font-semibold py-1" @click="isOpen = false">Beranda</a>
+        <a href="#fitur" class="text-gray-600 hover:text-[#0A52C4] py-1" @click="isOpen = false">Fitur</a>
+        <a href="#tentang-kami" class="text-gray-600 hover:text-[#0A52C4] py-1" @click="isOpen = false">Tentang Kami</a>
+        <a href="#testimoni" class="text-gray-600 hover:text-[#0A52C4] py-1" @click="isOpen = false">Testimoni</a>
+        <a href="#hubungi-kami" class="text-gray-600 hover:text-[#0A52C4] py-1" @click="isOpen = false">Hubungi Kami</a>
         <div class="pt-3 border-t border-gray-100 flex flex-col gap-3">
             <a href="{{ route('login') }}" class="text-center py-2.5 rounded-xl border-2 border-[#0A52C4]/20 text-[#0A52C4] font-semibold">
                 Masuk
             </a>
-            <a href="{{ route('register') }}" class="text-center py-3 rounded-xl bg-[#F28C28] text-white font-semibold hover:bg-[#E07D1C] transition-colors">
-                Daftar Gratis
+            <a href="{{ route('register') }}" class="text-center py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors">
+                Daftar
             </a>
         </div>
     </div>

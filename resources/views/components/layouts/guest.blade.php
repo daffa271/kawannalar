@@ -3,7 +3,7 @@
     Menginclude: Navbar Guest + Footer Guest.
 --}}
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 
 <head>
     <meta charset="UTF-8">

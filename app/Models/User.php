@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'status', 'approved_by', 'approved_at'])]
+#[Fillable(['name', 'email', 'password', 'role', 'status', 'approved_by', 'approved_at', 'school_name', 'xp_points', 'streak_days', 'is_suspended'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -32,6 +32,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'approved_at' => 'datetime',
+            'is_suspended' => 'boolean',
         ];
     }
 
@@ -58,5 +59,15 @@ class User extends Authenticatable
     public function modules(): HasMany
     {
         return $this->hasMany(Module::class, 'uploaded_by');
+    }
+
+    public function quizAttempts(): HasMany
+    {
+        return $this->hasMany(QuizAttempt::class);
+    }
+
+    public function quizzes(): HasMany
+    {
+        return $this->hasMany(Quiz::class, 'mentor_id');
     }
 }

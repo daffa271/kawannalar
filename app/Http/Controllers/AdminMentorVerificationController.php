@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Module;
+use App\Models\Quiz;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,9 +16,15 @@ class AdminMentorVerificationController extends Controller
     public function dashboard(): View
     {
         return view('pages.admin.dashboard.index', [
-            'totalStudents' => User::where('role', 'siswa')->count(),
-            'activeMentors' => User::where('role', 'mentor')->where('status', 'active')->count(),
+            'totalStudents'      => User::where('role', 'siswa')->count(),
+            'activeMentors'      => User::where('role', 'mentor')->where('status', 'active')->count(),
             'pendingMentorCount' => User::where('role', 'mentor')->where('status', 'pending')->count(),
+            'pendingModuleCount' => Module::where('status', 'pending')->count(),
+            'approvedModuleCount'=> Module::where('status', 'approved')->count(),
+            'pendingQuizCount'   => Quiz::where('status', 'pending')->count(),
+            'approvedQuizCount'  => Quiz::where('status', 'approved')->count(),
+            'recentMentors'      => User::where('role', 'mentor')->where('status', 'pending')->with('mentorProfile')->latest()->take(3)->get(),
+            'recentQuizzes'      => Quiz::where('status', 'pending')->with('mentor:id,name', 'subject')->latest()->take(3)->get(),
         ]);
     }
 
@@ -107,6 +114,39 @@ class AdminMentorVerificationController extends Controller
         abort_unless($path && Storage::disk('public')->exists($path), 404);
 
         return response()->file(Storage::disk('public')->path($path));
+    }
+
+    // ─── Quiz Moderation ──────────────────────────────────────────────────────
+
+    public function quizzes(): View
+    {
+        $pendingQuizzes = Quiz::where('status', 'pending')
+            ->with(['mentor:id,name', 'subject', 'questions'])
+            ->latest()
+            ->get();
+
+        $approvedQuizzes = Quiz::where('status', 'approved')
+            ->with(['mentor:id,name', 'subject'])
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return view('pages.admin.quizzes.index', compact('pendingQuizzes', 'approvedQuizzes'));
+    }
+
+    public function approveQuiz(Request $request, Quiz $quiz): RedirectResponse
+    {
+        $quiz->update(['status' => 'approved']);
+        return back()->with('status', "Paket soal \"{$quiz->title}\" berhasil disetujui dan kini tersedia untuk siswa.");
+    }
+
+    public function rejectQuiz(Request $request, Quiz $quiz): RedirectResponse
+    {
+        $quiz->update([
+            'status'           => 'rejected',
+            'rejection_reason' => $request->input('reason'),
+        ]);
+        return back()->with('status', "Paket soal \"{$quiz->title}\" ditolak.");
     }
 
     private function pendingMentor(int $id): User

@@ -1,15 +1,3 @@
-{{--
-    Features Grid — Landing Page KawanNalar.
-    8 Fitur Utama, grid 2 baris x 4 kolom (4 atas, 4 bawah) di desktop,
-    2 kolom di mobile.
-
-    CATATAN: tidak ada lagi atribut style="..." dengan interpolasi Blade
-    di file ini — semua warna dinamis dipindah ke class Tailwind lewat
-    $variants di bawah. Ini menghindari false-positive "at-rule or
-    selector expected" dari CSS validator editor (karena style="" dibaca
-    sebagai CSS mentah, sedangkan class="" tidak pernah divalidasi
-    sebagai CSS oleh editor manapun).
---}}
 <section id="fitur" class="bg-[#F4F7FA] py-20 scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 

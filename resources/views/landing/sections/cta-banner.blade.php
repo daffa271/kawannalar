@@ -1,8 +1,3 @@
-{{--
-    CTA Banner — Landing Page KawanNalar.
-    Banner terakhir sebelum footer, aksen warna #F28C28.
-    Ajakan daftar + ilustrasi placeholder.
---}}
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
     <div class="relative overflow-hidden rounded-2xl border border-[#F4D9A6] bg-[#FFF4DE]">
 

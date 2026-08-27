@@ -1,8 +1,3 @@
-{{--
-    Value Props / Trust Badges — Landing Page.
-    4 pill keunggulan: 100% Gratis, Mentor PTN, AI 24/7, Akses Kapan Saja.
-    Mencolok, ringan, langsung dibaca di atas lipatan.
---}}
 <section class="relative z-10 mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
     <div class="grid grid-cols-2 gap-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm lg:grid-cols-4">
         @php

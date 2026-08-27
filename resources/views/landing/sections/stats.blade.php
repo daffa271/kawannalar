@@ -1,9 +1,3 @@
-{{--
-    Stats / Impact Section — Landing Page KawanNalar.
-    Box biru #0A52C4 dengan 4 statistik impact.
-    Background section ini disamakan #F4F7FA dengan fitur.blade.php
-    supaya dua file ini menyatu tanpa jeda warna saat digabung berurutan.
---}}
 <section class="bg-[#F4F7FA] pt-2 lg:pt-4 pb-16 lg:pb-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div

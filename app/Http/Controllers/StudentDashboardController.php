@@ -36,20 +36,25 @@ class StudentDashboardController extends Controller
         return '12.5';
     }
 
-    private function upcomingMentoring(User $student): ?array
+    private function upcomingMentoring(User $student): ?\App\Models\MentoringBooking
     {
-        if (! Schema::hasTable('bookings') || ! method_exists($student, 'bookings')) {
-            return null;
-        }
-
-        $booking = $student->bookings()
-            ->with('mentor.mentorProfile')
-            ->where('starts_at', '>=', now())
-            ->whereIn('status', ['confirmed', 'scheduled'])
-            ->oldest('starts_at')
+        return \App\Models\MentoringBooking::where('mentoring_bookings.student_id', $student->id)
+            ->whereIn('mentoring_bookings.status', ['approved', 'pending'])
+            ->whereHas('slot', function ($query) {
+                $today = now()->toDateString();
+                $currentTime = now()->toTimeString();
+                $query->where('date', '>', $today)
+                      ->orWhere(function ($q) use ($today, $currentTime) {
+                          $q->where('date', '=', $today)
+                            ->where('start_time', '>=', $currentTime);
+                      });
+            })
+            ->with(['mentor.mentorProfile', 'slot'])
+            ->join('mentor_slots', 'mentoring_bookings.mentor_slot_id', '=', 'mentor_slots.id')
+            ->orderBy('mentor_slots.date')
+            ->orderBy('mentor_slots.start_time')
+            ->select('mentoring_bookings.*')
             ->first();
-
-        return $booking?->toArray();
     }
 
     private function leaderboard(): array

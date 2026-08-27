@@ -81,23 +81,42 @@ class RuangNalarController extends Controller
         Module::create($validated);
 
         $redirectRoute = $request->user()->role === 'mentor'
-            ? 'mentor.ruang-nalar.create'
-            : 'siswa.ruang-nalar.create';
+            ? 'mentor.ruang-nalar.index'
+            : 'siswa.ruang-nalar.index';
 
         return redirect()->route($redirectRoute)
-            ->with('status', 'Modul berhasil dikirim untuk ditinjau admin. Setelah disetujui, modul akan tampil di ruang berbagi.');
+            ->with('status', 'Catatan berhasil dikirim untuk ditinjau admin. Kamu akan mendapat +10 XP setelah disetujui!');
     }
 
     public function download(Module $module): BinaryFileResponse
     {
-        abort_unless($module->status === 'approved', 404);
+        abort_unless($module->status === 'approved' || $module->uploaded_by === Auth::id(), 404);
         abort_unless(Storage::disk('public')->exists($module->file_path), 404);
 
-        $module->increment('download_count');
+        if ($module->status === 'approved') {
+            $module->increment('download_count');
+        }
 
         return response()->download(
             Storage::disk('public')->path($module->file_path),
             str($module->title)->slug()->append('.')->append(pathinfo($module->file_path, PATHINFO_EXTENSION))->toString(),
         );
+    }
+
+    /**
+     * Tampilkan file secara inline di browser (preview tanpa download).
+     */
+    public function preview(Module $module): \Symfony\Component\HttpFoundation\Response
+    {
+        abort_unless($module->status === 'approved' || $module->uploaded_by === Auth::id(), 404);
+        abort_unless(Storage::disk('public')->exists($module->file_path), 404);
+
+        $path     = Storage::disk('public')->path($module->file_path);
+        $mimeType = mime_content_type($path);
+
+        return response()->file($path, [
+            'Content-Type'        => $mimeType,
+            'Content-Disposition' => 'inline',
+        ]);
     }
 }

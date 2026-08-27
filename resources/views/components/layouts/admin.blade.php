@@ -14,12 +14,12 @@
 </head>
 
 <body class="bg-[#F4F7FA] font-sans antialiased">
-    <div class="min-h-screen flex flex-col">
+    <div class="min-h-screen flex flex-col overflow-x-hidden">
         <x-navbar-app />
-        <div class="flex flex-1">
+        <div class="flex flex-1 min-w-0">
             <x-sidebar-app />
-            <main class="flex-1 min-h-screen bg-gray-50 pt-20 lg:ml-72">
-                <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-8 lg:px-8">
+            <main class="flex-1 min-w-0 flex flex-col justify-between min-h-screen bg-gray-50 pt-20 lg:ml-72 w-full overflow-x-hidden">
+                <div class="mx-auto w-full max-w-7xl flex-1 px-3.5 py-4 sm:px-6 md:py-8 lg:px-8 min-w-0">
                     {{ $slot }}
                 </div>
                 <x-footer-app />
