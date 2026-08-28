@@ -7,6 +7,7 @@ use App\Models\MentorSlot;
 use App\Models\MentoringBooking;
 use App\Models\LiveClass;
 use App\Services\TelegramNotificationService;
+use App\Services\TelegramService;
 
 class MentorTemanNalarController extends Controller
 {
@@ -65,6 +66,8 @@ class MentorTemanNalarController extends Controller
             'quota.min'              => 'Kuota minimal adalah 1.',
         ]);
 
+        $telegram = new TelegramService();
+
         if ($request->session_type === '1on1') {
             // Calculate duration automatically in backend
             $startTime = \Carbon\Carbon::parse($request->start_time);
@@ -72,26 +75,49 @@ class MentorTemanNalarController extends Controller
             $duration = $startTime->diffInMinutes($endTime);
 
             MentorSlot::create([
-                'mentor_id' => auth()->id(),
-                'date' => $request->date,
-                'start_time' => $request->start_time,
-                'end_time' => $request->end_time,
+                'mentor_id'    => auth()->id(),
+                'date'         => $request->date,
+                'start_time'   => $request->start_time,
+                'end_time'     => $request->end_time,
                 'meeting_link' => $request->meeting_link,
-                'duration' => $duration,
-                'status' => 'kosong',
+                'duration'     => $duration,
+                'status'       => 'kosong',
             ]);
+
+            // Kirim notifikasi Telegram ke grup KawanNalar
+            $telegram->sendMentoringNotification([
+                'type'        => '1on1',
+                'topic'       => 'Sesi 1-on-1 Mentoring',
+                'mentor_name' => auth()->user()->name,
+                'date'        => \Carbon\Carbon::parse($request->date)->translatedFormat('d F Y'),
+                'time'        => substr($request->start_time, 0, 5),
+                'link'        => $request->meeting_link,
+            ]);
+
             return redirect()->back()->with('success', 'Slot 1-on-1 berhasil ditambahkan!');
         } else {
             $schedule_time = \Carbon\Carbon::parse($request->live_date . ' ' . $request->live_time);
+
             LiveClass::create([
-                'mentor_id' => auth()->id(),
-                'title' => $request->title,
-                'description' => $request->description,
-                'schedule_time' => $schedule_time,
-                'quota' => $request->quota,
-                'meet_link' => $request->meeting_link,
+                'mentor_id'        => auth()->id(),
+                'title'            => $request->title,
+                'description'      => $request->description,
+                'schedule_time'    => $schedule_time,
+                'quota'            => $request->quota,
+                'meet_link'        => $request->meeting_link,
                 'registered_count' => 0,
             ]);
+
+            // Kirim notifikasi Telegram ke grup KawanNalar
+            $telegram->sendMentoringNotification([
+                'type'        => 'live_class',
+                'topic'       => $request->title,
+                'mentor_name' => auth()->user()->name,
+                'date'        => \Carbon\Carbon::parse($request->live_date)->translatedFormat('d F Y'),
+                'time'        => substr($request->live_time, 0, 5),
+                'link'        => $request->meeting_link,
+            ]);
+
             return redirect()->back()->with('success', 'Live Class berhasil ditambahkan!');
         }
     }
