@@ -107,8 +107,8 @@
                         </div>
                         <div>
                             <p class="text-xs text-white/40 mb-0.5">Email</p>
-                            <a href="mailto:support@kawannalar.my.id" class="text-sm text-white font-semibold hover:text-blue-400 transition-colors">
-                                support@kawannalar.my.id
+                            <a href="mailto:kawannalar@gmail.com" class="text-sm text-white font-semibold hover:text-blue-400 transition-colors">
+                                kawannalar@gmail.com
                             </a>
                         </div>
                     </li>

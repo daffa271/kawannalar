@@ -1,13 +1,11 @@
 <x-layouts.guest title="Masuk — KawanNalar">
     <div class="min-h-[calc(100vh-10rem)] bg-[#F4F7FA] px-4 py-8 sm:px-6 lg:py-12">
         <div class="mx-auto grid w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-xl lg:grid-cols-2">
-            <aside class="hidden flex-col justify-between bg-[#0F1F3D] p-10 text-white lg:flex lg:p-12">
-                <div><img src="{{ asset('images/logokawannalar.jpeg') }}" alt="Logo KawanNalar" class="h-12 w-12 rounded-xl object-cover">
-                    <p class="mt-10 text-sm font-bold uppercase tracking-[0.18em] text-[#FFC000]">KawanNalar</p>
-                    <h1 class="mt-3 text-4xl font-extrabold leading-tight">Kembali melanjutkan langkah menuju PTN impian.</h1>
-                    <p class="mt-5 text-sm leading-relaxed text-white/65">Satu akun untuk belajar, bertanya, dan bertumbuh bersama mentor.</p>
-                </div>
-                <p class="border-t border-white/10 pt-6 text-sm text-white/60">Belajar bersama, raih impian.</p>
+            <aside class="hidden overflow-hidden bg-[#0F1F3D] lg:flex">
+                <img
+                    src="{{ asset('images/sideimagelogin.png') }}"
+                    alt="Ilustrasi belajar KawanNalar"
+                    class="h-full w-full object-cover object-center">
             </aside>
             <main class="w-full max-w-md justify-self-center p-7 sm:p-10 lg:p-12">
                 <div class="mb-8">

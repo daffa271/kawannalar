@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+
 use App\Models\Module;
+use App\Notifications\ResetPasswordNotification;
+
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,8 +16,23 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'status', 'approved_by', 'approved_at', 'school_name', 'xp_points', 'streak_days', 'is_suspended'])]
-#[Hidden(['password', 'remember_token'])]
+#[Fillable([
+    'name',
+    'email',
+    'password',
+    'role',
+    'status',
+    'approved_by',
+    'approved_at',
+    'school_name',
+    'xp_points',
+    'streak_days',
+    'is_suspended'
+])]
+#[Hidden([
+    'password',
+    'remember_token'
+])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -34,6 +51,15 @@ class User extends Authenticatable
             'approved_at' => 'datetime',
             'is_suspended' => 'boolean',
         ];
+    }
+
+    /**
+     * Kirim notifikasi reset password menggunakan
+     * template email KawanNalar.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 
     public function studentProfile(): HasOne

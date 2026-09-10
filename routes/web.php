@@ -48,6 +48,23 @@ Route::middleware(['auth', 'role:siswa'])->group(function () {
     // Teman Nalar
     Route::get('/teman-nalar', [TemanNalarController::class, 'index'])->name('siswa.teman-nalar.index');
     Route::post('/teman-nalar/booking', [BookingMentoringController::class, 'store'])->name('siswa.teman-nalar.booking.store');
+
+    // Fitur siswa yang masih dalam pengembangan.
+    Route::get('/nalar-diskusi', fn() => view('dashboard.maintenance', [
+        'title' => 'Nalar Diskusi — Segera Hadir',
+    ]))->name('siswa.nalar-diskusi');
+    Route::get('/nalarbot', fn() => view('dashboard.maintenance', [
+        'title' => 'NalarBot AI — Segera Hadir',
+    ]))->name('siswa.nalarbot');
+    Route::get('/jejak-nalar', fn() => view('dashboard.maintenance', [
+        'title' => 'Jejak Nalar — Segera Hadir',
+    ]))->name('siswa.jejak-nalar');
+    Route::get('/kabar-nalar', fn() => view('dashboard.maintenance', [
+        'title' => 'Kabar Nalar — Segera Hadir',
+    ]))->name('siswa.kabar-nalar');
+    Route::get('/nalar-focus', fn() => view('dashboard.maintenance', [
+        'title' => 'Nalar Focus — Segera Hadir',
+    ]))->name('siswa.nalar-focus');
 });
 Route::middleware(['auth', 'role:mentor'])->group(function () {
     Route::get('/mentor/ruang-nalar', [RuangNalarController::class, 'mentorIndex'])->name('mentor.ruang-nalar.index');

@@ -55,7 +55,7 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">Email Resmi</p>
-                            <p class="font-bold text-gray-900">support@kawannalar.my.id</p>
+                            <p class="font-bold text-gray-900">kawannalar@gmail.com</p>
                             <p class="text-xs text-gray-400 mt-1">Respon dalam 1×24 jam kerja</p>
                         </div>
                     </div>
