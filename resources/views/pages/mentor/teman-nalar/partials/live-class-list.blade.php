@@ -1,32 +1,24 @@
-<div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-    <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-        <h2 class="font-extrabold text-gray-800 text-sm">Daftar Live Class Anda</h2>
+<div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div class="flex items-center justify-between border-b border-gray-100 px-5 py-5">
+        <h2 class="text-sm font-extrabold leading-6 text-gray-800">Daftar Belajar Bersama Anda</h2>
     </div>
-    
-    <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+    <div class="grid grid-cols-1 gap-5 p-5 md:grid-cols-2 lg:grid-cols-3">
         @forelse($liveClasses as $class)
-        <div class="w-full rounded-xl border border-gray-200 p-4 hover:shadow-md transition">
-            <div class="flex items-center justify-between mb-3">
-                <span class="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600 flex items-center gap-1">
-                    <span class="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"></span> Live Class
+        <div class="w-full rounded-xl border border-gray-200 p-5 transition hover:shadow-md">
+            <div class="mb-4 flex items-center justify-between gap-3">
+                <span class="flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-[10px] font-bold text-[#0A52C4]">
+                    <span class="h-1.5 w-1.5 rounded-full bg-[#0A52C4] animate-pulse"></span> Belajar Bersama
                 </span>
-                <span class="text-xs text-gray-500 font-medium">{{ \Carbon\Carbon::parse($class->schedule_time)->translatedFormat('d M Y') }}</span>
+                <span class="shrink-0 text-xs font-medium text-gray-500">{{ \Carbon\Carbon::parse($class->schedule_time)->translatedFormat('d M Y') }}</span>
             </div>
-            
-            <h3 class="font-bold text-gray-900 text-base mb-1">{{ $class->title }}</h3>
-            <p class="text-xs text-gray-500 mb-4">{{ \Carbon\Carbon::parse($class->schedule_time)->translatedFormat('H:i') }} WIB</p>
-            
-            <div class="bg-gray-50 rounded-lg p-3 mb-4">
-                <div class="flex justify-between items-center text-xs mb-1.5">
-                    <span class="font-bold text-gray-700">Kuota Terisi</span>
-                    <span class="font-medium text-gray-500">{{ $class->registered_count }}/{{ $class->quota }}</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-1.5">
-                    <div class="bg-[#0A52C4] h-1.5 rounded-full" style="width: {{ $class->quota > 0 ? ($class->registered_count / $class->quota) * 100 : 0 }}%"></div>
-                </div>
-            </div>
-            
-            <a href="{{ $class->meet_link }}" target="_blank" class="w-full block text-center rounded-lg border border-[#0A52C4] py-2 text-sm font-bold text-[#0A52C4] hover:bg-[#0A52C4] hover:text-white transition">
+
+            <h3 class="text-base font-bold leading-6 text-gray-900">{{ $class->title }}</h3>
+            <p class="mt-1 text-xs leading-5 text-gray-500">{{ \Carbon\Carbon::parse($class->schedule_time)->translatedFormat('H:i') }} WIB</p>
+
+            <div class="mt-4 rounded-lg bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-700">Terbuka untuk semua siswa tanpa kuota.</div>
+
+            <a href="{{ $class->meet_link }}" target="_blank" class="mt-4 block w-full rounded-lg border border-[#0A52C4] py-2.5 text-center text-sm font-bold text-[#0A52C4] transition hover:bg-[#0A52C4] hover:text-white">
                 Masuk Meeting
             </a>
         </div>

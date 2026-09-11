@@ -2,17 +2,19 @@
 
     <div
         x-data="{
-            role: '{{ old('role', 'siswa') }}',
+            role: @js(old('role', 'siswa')),
             showPassword: false,
             showConfirmation: false
         }"
-        class="min-h-[calc(100dvh-10rem)] bg-[#F4F7FA] px-4 py-8 sm:px-6 lg:py-10"
+        class="min-h-[calc(100dvh-10rem)] bg-[#F4F7FA] px-4 py-6 sm:px-6 lg:flex lg:items-center lg:justify-center lg:py-6"
     >
 
         {{-- =========================================================
             REGISTER CARD
-            Tinggi desktop dibuat tetap agar ilustrasi kiri
-            tidak berubah ketika form Mentor lebih panjang.
+            Desktop:
+            - Tinggi mengikuti viewport
+            - Maksimal 720px
+            - Minimal 600px
         ========================================================== --}}
         <div
             class="
@@ -25,69 +27,89 @@
                 bg-white
                 shadow-xl
 
-                lg:h-[720px]
+                lg:h-[calc(100dvh-8rem)]
+                lg:min-h-[600px]
+                lg:max-h-[720px]
+
                 lg:grid-cols-[0.9fr_1.1fr]
             "
         >
 
             {{-- =====================================================
                 LEFT : ILLUSTRATION
-                Tidak ikut bertambah tinggi ketika form Mentor aktif.
+                Tinggi panel selalu mengikuti tinggi card.
             ====================================================== --}}
             <aside
                 class="
                     relative
                     hidden
                     h-full
+                    min-h-0
                     overflow-hidden
                     bg-[#0F1F3D]
                     lg:block
                 "
             >
+
                 <img
                     src="{{ asset('images/sideimageregist.png') }}"
                     alt="Ilustrasi pendaftaran KawanNalar"
-                    class="h-full w-full object-cover object-center"
+                    class="
+                        absolute
+                        inset-0
+                        h-full
+                        w-full
+                        object-cover
+                        object-top
+                    "
                 >
+
             </aside>
 
 
             {{-- =====================================================
                 RIGHT : REGISTER FORM
-                Form Mentor dapat scroll secara internal.
-                Desktop : fixed height.
-                Mobile  : natural document flow.
+                Desktop:
+                - Tinggi tetap mengikuti card
+                - Scroll hanya di area form
+                - Ilustrasi kiri tidak ikut memanjang
             ====================================================== --}}
             <section
                 class="
+                    flex
                     min-h-0
+                    h-full
+                    flex-col
                     overflow-y-auto
-                    px-6
-                    py-8
 
-                    sm:px-10
+                    px-5
+                    py-7
 
-                    lg:h-full
-                    lg:px-12
-                    lg:py-10
+                    sm:px-8
+                    sm:py-8
+
+                    lg:px-10
+                    lg:py-8
                 "
             >
 
                 {{-- =================================================
                     HEADER
                 ================================================== --}}
-                <div class="mb-7">
-                    <p class="text-sm font-semibold text-[#0A52C4]">
+                <div class="mb-6 shrink-0">
+
+                    <p class="text-sm font-semibold leading-5 text-[#0A52C4]">
                         Buat akun KawanNalar
                     </p>
 
-                    <h2 class="mt-1 text-2xl font-extrabold text-gray-900">
+                    <h2 class="mt-1 text-2xl font-extrabold leading-tight text-gray-900">
                         Bergabung dalam satu langkah.
                     </h2>
 
-                    <p class="mt-2 text-sm text-gray-500">
+                    <p class="mt-2 text-sm leading-5 text-gray-500">
                         Pilih jenis akun yang paling sesuai denganmu.
                     </p>
+
                 </div>
 
 
@@ -106,7 +128,8 @@
                 @if ($errors->any())
                     <div
                         class="
-                            mb-5
+                            mb-4
+                            shrink-0
                             rounded-xl
                             border
                             border-red-100
@@ -114,6 +137,7 @@
                             px-4
                             py-3
                             text-sm
+                            leading-5
                             text-red-700
                         "
                     >
@@ -129,10 +153,11 @@
                     method="POST"
                     action="{{ route('register') }}"
                     enctype="multipart/form-data"
-                    class="space-y-5"
+                    class="flex-1 space-y-4"
                 >
 
                     @csrf
+
 
                     {{-- =================================================
                         ROLE SELECTOR
@@ -154,7 +179,7 @@
                             :class="
                                 role === 'siswa'
                                     ? 'bg-[#0A52C4] text-white shadow-sm'
-                                    : 'text-gray-500'
+                                    : 'text-gray-500 hover:text-gray-700'
                             "
                             class="
                                 rounded-lg
@@ -162,6 +187,7 @@
                                 py-2.5
                                 text-sm
                                 font-bold
+                                leading-5
                                 transition
                             "
                         >
@@ -176,7 +202,7 @@
                             :class="
                                 role === 'mentor'
                                     ? 'bg-[#0A52C4] text-white shadow-sm'
-                                    : 'text-gray-500'
+                                    : 'text-gray-500 hover:text-gray-700'
                             "
                             class="
                                 rounded-lg
@@ -184,6 +210,7 @@
                                 py-2.5
                                 text-sm
                                 font-bold
+                                leading-5
                                 transition
                             "
                         >
@@ -310,7 +337,7 @@
                                     name="password"
                                     required
                                     autocomplete="new-password"
-                                    class="field-input pr-14"
+                                    class="field-input pr-20"
                                     placeholder="Minimal 8 karakter"
                                 >
 
@@ -324,6 +351,7 @@
                                         -translate-y-1/2
                                         text-xs
                                         font-semibold
+                                        leading-4
                                         text-gray-400
                                         transition
                                         hover:text-[#0A52C4]
@@ -363,7 +391,7 @@
                                     name="password_confirmation"
                                     required
                                     autocomplete="new-password"
-                                    class="field-input pr-14"
+                                    class="field-input pr-20"
                                     placeholder="Ulangi password"
                                 >
 
@@ -377,6 +405,7 @@
                                         -translate-y-1/2
                                         text-xs
                                         font-semibold
+                                        leading-4
                                         text-gray-400
                                         transition
                                         hover:text-[#0A52C4]
@@ -409,12 +438,7 @@
                         class="grid gap-4 sm:grid-cols-2"
                     >
 
-                        {{-- =================================================
-                            ASAL SEKOLAH
-                            IMPORTANT:
-                            ID, NAME, CLASS tetap dipertahankan.
-                            Yang berubah hanya SELECT → INPUT.
-                        ================================================== --}}
+                        {{-- Asal Sekolah --}}
                         <div>
 
                             <label
@@ -435,7 +459,7 @@
                                 autocomplete="organization"
                             >
 
-                            <p class="mt-1.5 text-xs text-gray-400">
+                            <p class="mt-1 text-xs leading-4 text-gray-400">
                                 Tulis nama lengkap sekolahmu.
                             </p>
 
@@ -762,6 +786,7 @@
                                     px-3
                                     py-2.5
                                     text-sm
+                                    leading-5
                                     text-gray-500
                                     file:mr-3
                                     file:rounded-lg
@@ -775,7 +800,7 @@
                                 "
                             >
 
-                            <p class="mt-1 text-xs text-gray-400">
+                            <p class="mt-1 text-xs leading-4 text-gray-400">
                                 JPG, PNG, atau PDF maksimal 5 MB.
                             </p>
 
@@ -792,7 +817,7 @@
                     {{-- =================================================
                         TERMS
                     ================================================== --}}
-                    <p class="text-xs leading-relaxed text-gray-400">
+                    <p class="text-xs leading-5 text-gray-400">
 
                         Dengan mendaftar, kamu menyetujui
 
@@ -829,6 +854,7 @@
                             px-4
                             py-3.5
                             font-bold
+                            leading-5
                             text-white
                             transition
                             hover:bg-[#E07D1C]
@@ -857,7 +883,7 @@
                 {{-- =================================================
                     LOGIN LINK
                 ================================================== --}}
-                <p class="mt-6 text-center text-sm text-gray-500">
+                <p class="mt-5 text-center text-sm leading-5 text-gray-500">
 
                     Sudah punya akun?
 

@@ -17,6 +17,11 @@ class MentorSlot extends Model
 
     public function booking()
     {
-        return $this->hasOne(MentoringBooking::class, 'mentor_slot_id');
+        return $this->hasOne(MentoringBooking::class, 'mentor_slot_id')->latestOfMany();
+    }
+
+    public function bookings()
+    {
+        return $this->hasMany(MentoringBooking::class, 'mentor_slot_id');
     }
 }

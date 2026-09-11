@@ -47,7 +47,9 @@ Route::middleware(['auth', 'role:siswa'])->group(function () {
 
     // Teman Nalar
     Route::get('/teman-nalar', [TemanNalarController::class, 'index'])->name('siswa.teman-nalar.index');
+    Route::get('/teman-nalar/booking/{mentor}', [TemanNalarController::class, 'createBooking'])->name('siswa.teman-nalar.booking.create');
     Route::post('/teman-nalar/booking', [BookingMentoringController::class, 'store'])->name('siswa.teman-nalar.booking.store');
+    Route::get('/teman-nalar/booking/{id}/meeting', [MentorTemanNalarController::class, 'meeting'])->name('siswa.teman-nalar.booking.meeting');
 
     // Fitur siswa yang masih dalam pengembangan.
     Route::get('/nalar-diskusi', fn() => view('dashboard.maintenance', [
@@ -85,6 +87,8 @@ Route::middleware(['auth', 'role:mentor'])->group(function () {
     Route::delete('/mentor/teman-nalar/slot/{id}', [MentorTemanNalarController::class, 'destroySlot'])->name('mentor.teman-nalar.slot.destroy');
     Route::patch('/mentor/teman-nalar/booking/{id}/approve', [MentorTemanNalarController::class, 'approveBooking'])->name('mentor.teman-nalar.booking.approve');
     Route::patch('/mentor/teman-nalar/booking/{id}/reject', [MentorTemanNalarController::class, 'rejectBooking'])->name('mentor.teman-nalar.booking.reject');
+    Route::patch('/mentor/teman-nalar/booking/{id}/complete', [MentorTemanNalarController::class, 'completeBooking'])->name('mentor.teman-nalar.booking.complete');
+    Route::get('/mentor/teman-nalar/booking/{id}/meeting', [MentorTemanNalarController::class, 'meeting'])->name('mentor.teman-nalar.booking.meeting');
 });
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/dashboard/admin', [AdminMentorVerificationController::class, 'dashboard'])->name('dashboard.admin');

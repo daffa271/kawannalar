@@ -25,7 +25,7 @@ class TelegramService
      *   - mentor_name : string
      *   - date        : string   (tanggal tampil, sudah diformat)
      *   - time        : string   (jam mulai, sudah diformat)
-     *   - link        : string   (meeting link)
+     *   - link        : string   (meeting link, only for live_class)
      * @return bool
      */
     public function sendMentoringNotification(array $sessionData): bool
@@ -35,21 +35,39 @@ class TelegramService
             return false;
         }
 
-        $typeLabel = ($sessionData['type'] ?? '1on1') === 'live_class'
-            ? '🎓 <b>LIVE CLASS BARU TERSEDIA!</b>'
-            : '📢 <b>SESI MENTORING BARU TERSEDIA!</b>';
+        $isLiveClass = ($sessionData['type'] ?? '1on1') === 'live_class';
+        $typeLabel = $isLiveClass
+            ? '🎓 <b>BELAJAR BERSAMA BARU TERSEDIA!</b>'
+            : '📢 <b>SESI BIMBINGAN PRIVATE TERSEDIA!</b>';
 
-        $message = implode("\n", [
+        $messageLines = [
             $typeLabel,
             '',
             "📚 <b>Topik:</b> " . htmlspecialchars($sessionData['topic'] ?? '-', ENT_XML1),
             "👨🏫 <b>Mentor:</b> " . htmlspecialchars($sessionData['mentor_name'] ?? '-', ENT_XML1),
-            "📅 <b>Tanggal:</b> " . htmlspecialchars($sessionData['date'] ?? '-', ENT_XML1),
-            "⏰ <b>Waktu:</b> " . htmlspecialchars($sessionData['time'] ?? '-', ENT_XML1) . " WIB",
-            "🔗 <b>Link Mentoring:</b> " . ($sessionData['link'] ?? '-'),
-            '',
-            "✨ Segera daftar dan manfaatkan sesi ini!",
-        ]);
+        ];
+
+        if (!empty($sessionData['university'])) {
+            $messageLines[] = "🏫 <b>PTN:</b> " . htmlspecialchars($sessionData['university'], ENT_XML1);
+        }
+
+        if (!$isLiveClass && !empty($sessionData['school'])) {
+            $messageLines[] = "🎓 <b>Alumni:</b> " . htmlspecialchars($sessionData['school'], ENT_XML1);
+        }
+
+        $messageLines[] = "📅 <b>Tanggal:</b> " . htmlspecialchars($sessionData['date'] ?? '-', ENT_XML1);
+        $messageLines[] = "⏰ <b>Waktu:</b> " . htmlspecialchars($sessionData['time'] ?? '-', ENT_XML1) . " WIB";
+
+        if ($isLiveClass) {
+            $messageLines[] = "🔗 <b>Link Google Meet:</b> " . htmlspecialchars($sessionData['link'] ?? '-', ENT_XML1);
+            $messageLines[] = '';
+            $messageLines[] = '✨ Yuk ikut Belajar Bersama di KawanNalar.';
+        } else {
+            $messageLines[] = '';
+            $messageLines[] = '✨ Sesi tersedia untuk dibooking melalui KawanNalar.';
+        }
+
+        $message = implode("\n", $messageLines);
 
         $url = "https://api.telegram.org/bot{$this->botToken}/sendMessage";
 
@@ -74,6 +92,48 @@ class TelegramService
             Log::error('TelegramService: Exception saat mengirim notifikasi.', [
                 'message' => $e->getMessage(),
             ]);
+            return false;
+        }
+    }
+
+    public function sendBookingStatusNotification(array $bookingData): bool
+    {
+        $status = $bookingData['status'] ?? 'approved';
+        $statusLabel = $status === 'approved' ? '✅ DISETUJUI' : '❌ DITOLAK';
+
+        return $this->sendGroupMessage(implode("\n", [
+            "<b>Booking Bimbingan Private {$statusLabel}</b>",
+            '',
+            '<b>Nama siswa:</b> ' . htmlspecialchars($bookingData['student_name'] ?? '-', ENT_XML1),
+            '<b>Mentor:</b> Kak ' . htmlspecialchars($bookingData['mentor_name'] ?? '-', ENT_XML1),
+            '<b>PTN:</b> ' . htmlspecialchars($bookingData['university'] ?? '-', ENT_XML1),
+            '<b>Jadwal:</b> ' . htmlspecialchars($bookingData['schedule'] ?? '-', ENT_XML1),
+            '<b>Topik:</b> ' . htmlspecialchars($bookingData['topic'] ?? '-', ENT_XML1),
+            '',
+            $status === 'approved'
+                ? 'Silakan buka KawanNalar untuk mengikuti sesi sesuai jadwal.'
+                : 'Sesi ini tidak dapat dilanjutkan. Silakan pilih sesi lain di KawanNalar.',
+        ]));
+    }
+
+    private function sendGroupMessage(string $message): bool
+    {
+        if (empty($this->botToken) || empty($this->chatId)) {
+            Log::warning('TelegramService: BOT_TOKEN atau CHAT_ID belum dikonfigurasi di .env');
+            return false;
+        }
+
+        try {
+            $response = Http::timeout(10)->post("https://api.telegram.org/bot{$this->botToken}/sendMessage", [
+                'chat_id' => $this->chatId,
+                'text' => $message,
+                'parse_mode' => 'HTML',
+                'disable_web_page_preview' => true,
+            ]);
+
+            return $response->successful();
+        } catch (\Exception $e) {
+            Log::error('TelegramService: Exception saat mengirim status booking.', ['message' => $e->getMessage()]);
             return false;
         }
     }

@@ -13,7 +13,6 @@ class BookingApprovedNotification extends Notification
         public string $mentorName,
         public string $topic,
         public string $schedule,
-        public ?string $meetLink,
     ) {}
 
     public function via($notifiable): array
@@ -25,7 +24,7 @@ class BookingApprovedNotification extends Notification
     {
         return [
             'title' => 'Booking Mentoring Disetujui',
-            'body' => "✅ Bimbinganmu dengan Kak {$this->mentorName} untuk topik \"{$this->topic}\" pada {$this->schedule} telah disetujui. Link: " . ($this->meetLink ?? '-'),
+            'body' => "✅ Bimbinganmu dengan Kak {$this->mentorName} untuk topik \"{$this->topic}\" pada {$this->schedule} telah disetujui. Buka KawanNalar untuk mengakses sesi.",
             'type' => 'booking_approved',
         ];
     }

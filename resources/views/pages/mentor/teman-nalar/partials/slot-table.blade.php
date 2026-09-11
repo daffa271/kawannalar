@@ -15,43 +15,57 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($slots as $slot)
-                <tr class="hover:bg-gray-50 transition-colors">
+                <tr class="{{ in_array($slot->status, ['completed', 'expired']) ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-50' }} transition-colors">
                     <td class="py-4 pl-5 pr-3 text-sm font-medium text-gray-900">{{ \Carbon\Carbon::parse($slot->date)->translatedFormat('l, d M Y') }}</td>
                     <td class="px-3 py-4 text-sm text-gray-600">{{ substr($slot->start_time, 0, 5) }} - {{ substr($slot->end_time, 0, 5) }} WIB</td>
                     <td class="px-3 py-4 text-sm text-gray-600">{{ $slot->duration ?? '45' }} Menit</td>
                     <td class="px-3 py-4">
-                        @if($slot->status === 'terisi')
-                            <span class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-bold text-[#0A52C4] badge-terisi">
-                                <span class="h-1.5 w-1.5 rounded-full bg-[#0A52C4]"></span> Terisi
-                            </span>
-                            @if($slot->booking && $slot->booking->student)
-                                <div class="text-xs text-gray-500 mt-1 font-semibold">{{ $slot->booking->student->name }}</div>
-                            @endif
+                        @if($slot->status === 'completed')
+                        <span class="inline-flex items-center gap-1 rounded-full bg-gray-200 px-2.5 py-0.5 text-[11px] font-bold text-gray-600">Selesai</span>
+                        @elseif($slot->status === 'expired')
+                        <span class="inline-flex items-center gap-1 rounded-full bg-gray-200 px-2.5 py-0.5 text-[11px] font-bold text-gray-600">Kedaluwarsa</span>
+                        @elseif($slot->booking?->status === 'pending')
+                        <span class="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-0.5 text-[11px] font-bold text-yellow-700">Menunggu Konfirmasi</span>
+                        <div class="text-xs text-gray-500 mt-1 font-semibold">{{ $slot->booking->student?->name }}</div>
+                        @elseif($slot->booking?->status === 'approved' || $slot->status === 'terisi')
+                        <span class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-bold text-[#0A52C4] badge-terisi">
+                            <span class="h-1.5 w-1.5 rounded-full bg-[#0A52C4]"></span> Terisi
+                        </span>
+                        @if($slot->booking && $slot->booking->student)
+                        <div class="text-xs text-gray-500 mt-1 font-semibold">{{ $slot->booking->student->name }}</div>
+                        @endif
                         @else
-                            <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-[11px] font-bold text-green-700 badge-kosong">
-                                <span class="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span> Kosong (Tersedia)
-                            </span>
+                        <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-[11px] font-bold text-green-700 badge-kosong">
+                            <span class="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span> Kosong (Tersedia)
+                        </span>
                         @endif
                     </td>
                     <td class="px-3 py-4 text-right pr-5">
-                        @if($slot->status === 'terisi')
-                            <a href="{{ $slot->meeting_link }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#0A52C4] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#0843a1] transition btn-link-meet">
-                                🎥 Link Meet
-                            </a>
+                        @if($slot->booking?->status === 'approved')
+                        <a href="{{ route('mentor.teman-nalar.booking.meeting', $slot->booking->id) }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#0A52C4] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#0843a1] transition btn-link-meet">
+                            🎥 Link Meet
+                        </a>
+                        <form action="{{ route('mentor.teman-nalar.booking.complete', $slot->booking->id) }}" method="POST" class="inline">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="ml-1 inline-flex items-center justify-center rounded-lg bg-gray-200 px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-300">Mentoring Selesai</button>
+                        </form>
+                        @elseif(in_array($slot->status, ['completed', 'expired']))
+                        <span class="text-xs font-bold text-gray-400">Tidak aktif</span>
                         @else
-                            @if(auth()->user()->is_suspended)
-                                <button disabled class="text-xs font-bold text-gray-400 cursor-not-allowed">
-                                    Hapus Slot
-                                </button>
-                            @else
-                                <form action="{{ route('mentor.teman-nalar.slot.destroy', $slot->id) }}" method="POST" class="inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-xs font-bold text-red-500 hover:text-red-700 transition btn-hapus-slot" onclick="return confirm('Hapus slot ini?')">
-                                        Hapus Slot
-                                    </button>
-                                </form>
-                            @endif
+                        @if(auth()->user()->is_suspended)
+                        <button disabled class="text-xs font-bold text-gray-400 cursor-not-allowed">
+                            Hapus Slot
+                        </button>
+                        @else
+                        <form action="{{ route('mentor.teman-nalar.slot.destroy', $slot->id) }}" method="POST" class="inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-xs font-bold text-red-500 hover:text-red-700 transition btn-hapus-slot" onclick="return confirm('Hapus slot ini?')">
+                                Hapus Slot
+                            </button>
+                        </form>
+                        @endif
                         @endif
                     </td>
                 </tr>

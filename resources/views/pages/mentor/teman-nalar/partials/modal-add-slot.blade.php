@@ -12,6 +12,7 @@
     <div @click.outside="showModal = false"
         x-data="{
             type: '1on1',
+            topic: '',
             startTime: '',
             endTime: '',
             get durationVal() {
@@ -33,19 +34,19 @@
         <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 shrink-0">
             <div>
                 <h2 class="text-base font-extrabold text-gray-900">Buat Sesi Baru</h2>
-                <p class="text-xs text-gray-500 mt-0.5">Tambah slot 1-on-1 atau jadwal Live Class</p>
+                <p class="text-xs text-gray-500 mt-0.5">Tambah sesi private atau jadwal Belajar Bersama</p>
             </div>
             <button @click="showModal = false" type="button"
                 class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
         </div>
 
         {{-- Scrollable Form Body --}}
         <form action="{{ route('mentor.teman-nalar.slot.store') }}" method="POST"
-              class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+            class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
             @csrf
 
             {{-- Tab: Jenis Sesi --}}
@@ -66,7 +67,7 @@
                             ? 'bg-white shadow text-[#0A52C4] border-blue-200'
                             : 'text-gray-500 border-transparent hover:text-gray-700'"
                         class="flex-1 rounded-lg border py-2 text-sm font-bold transition">
-                        🎥 Live Class
+                        🎥 Belajar Bersama
                     </button>
                 </div>
                 <input type="hidden" name="session_type" :value="type">
@@ -103,6 +104,21 @@
                             :class="!isValidTime ? 'border-red-400 bg-red-50' : ''">
                     </div>
                 </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Topik Bimbingan <span class="text-red-500">*</span></label>
+                    <select name="topic" x-model="topic" :required="type === '1on1'"
+                        class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-[#0A52C4] focus:ring-1 focus:ring-[#0A52C4] outline-none">
+                        <option value="">Pilih topik</option>
+                        <option>Rasionalisasi SNBP</option>
+                        <option>Strategi UTBK</option>
+                        <option>Curhat</option>
+                        <option>Lainnya</option>
+                    </select>
+                    <input type="text" name="custom_topic" x-show="topic === 'Lainnya'" x-cloak
+                        :required="type === '1on1' && topic === 'Lainnya'"
+                        placeholder="Tulis topik custom"
+                        class="mt-2 w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-[#0A52C4] focus:ring-1 focus:ring-[#0A52C4] outline-none">
+                </div>
                 {{-- Durasi Auto + Validasi --}}
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Durasi (dihitung otomatis)</label>
@@ -115,9 +131,9 @@
                         <span class="text-sm text-gray-500 font-medium" x-show="durationVal">menit</span>
                     </div>
                     <p x-show="!isValidTime"
-                       class="mt-1 text-[11px] text-red-600 font-semibold flex items-center gap-1">
+                        class="mt-1 text-[11px] text-red-600 font-semibold flex items-center gap-1">
                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                         </svg>
                         Waktu selesai tidak boleh sama atau sebelum waktu mulai
                     </p>
@@ -158,11 +174,6 @@
                             :required="type === 'live_class'"
                             class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#0A52C4] focus:ring-1 focus:ring-[#0A52C4] outline-none">
                     </div>
-                    <div class="col-span-1">
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Kuota Maks</label>
-                        <input type="number" name="quota" min="1" value="30"
-                            class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#0A52C4] focus:ring-1 focus:ring-[#0A52C4] outline-none">
-                    </div>
                 </div>
             </div>
 
@@ -177,7 +188,7 @@
                     required
                     class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-[#0A52C4] focus:ring-1 focus:ring-[#0A52C4] outline-none">
                 <p class="mt-1 text-[11px] text-gray-400">
-                    Link akan diberikan kepada siswa setelah booking disetujui.
+                    Untuk private, link hanya diberikan di web setelah booking disetujui. Belajar Bersama dapat langsung diikuti.
                 </p>
             </div>
 
@@ -185,7 +196,7 @@
             @if($errors->any())
             <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700 space-y-0.5">
                 @foreach($errors->all() as $error)
-                    <div>• {{ $error }}</div>
+                <div>• {{ $error }}</div>
                 @endforeach
             </div>
             @endif
