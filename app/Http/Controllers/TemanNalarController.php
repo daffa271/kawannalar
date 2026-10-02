@@ -6,7 +6,6 @@ use App\Models\LiveClass;
 use App\Models\MentoringBooking;
 use App\Models\MentorSlot;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -17,12 +16,12 @@ class TemanNalarController extends Controller
     {
         abort_unless($mentor->role === 'mentor' && $mentor->status === 'active', 404);
 
-        $this->expirePastSessions();
+        MentorSlot::expirePastSessions();
 
         $mentor->load('mentorProfile');
         $slots = MentorSlot::where('mentor_id', $mentor->id)
             ->where('status', 'kosong')
-            ->where('date', '>=', now()->toDateString())
+            ->notStarted()
             ->whereDoesntHave('bookings', function ($query) {
                 $query->whereIn('status', ['pending', 'approved']);
             })
@@ -35,7 +34,7 @@ class TemanNalarController extends Controller
 
     public function index(Request $request)
     {
-        $this->expirePastSessions();
+        MentorSlot::expirePastSessions();
 
         $search = trim((string) $request->query('q', ''));
         $university = trim((string) $request->query('university', ''));
@@ -49,7 +48,7 @@ class TemanNalarController extends Controller
             ->each(function ($mentor) use ($topic) {
                 $mentor->available_slots = MentorSlot::where('mentor_id', $mentor->id)
                     ->where('status', 'kosong')
-                    ->where('date', '>=', now()->toDateString())
+                    ->notStarted()
                     ->whereDoesntHave('bookings', function ($query) {
                         $query->whereIn('status', ['pending', 'approved']);
                     })
@@ -105,17 +104,5 @@ class TemanNalarController extends Controller
             ->get();
 
         return view('pages.siswa.teman-nalar.index', compact('mentors', 'liveClasses', 'myBookings', 'universities', 'search', 'university', 'topic'));
-    }
-
-    private function expirePastSessions(): void
-    {
-        $slots = MentorSlot::whereIn('status', ['kosong', 'terisi'])->get();
-
-        foreach ($slots as $slot) {
-            if (Carbon::parse($slot->date.' '.$slot->end_time)->isPast()) {
-                $slot->update(['status' => 'expired']);
-                $slot->bookings()->whereIn('status', ['pending', 'approved'])->update(['status' => 'expired']);
-            }
-        }
     }
 }

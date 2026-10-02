@@ -74,6 +74,12 @@
                                     <span class="inline-flex items-center gap-1 rounded-full bg-yellow-50 px-2.5 py-0.5 text-[10px] font-bold text-yellow-700 border border-yellow-200">Pending Admin</span>
                                 @endif
                             </div>
+                            @if($module->status === 'rejected')
+                            <p class="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[11px] leading-relaxed text-red-700 break-words">
+                                <span class="font-bold text-red-800">Alasan ditolak Admin:</span>
+                                {{ $module->rejection_reason ?: 'Admin tidak mencantumkan alasan penolakan.' }}
+                            </p>
+                            @endif
                         </div>
                     </div>
                     

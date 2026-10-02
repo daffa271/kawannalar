@@ -3,15 +3,23 @@
 namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
+use App\Models\Question;
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
 use App\Models\Subject;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 class UjiNalarController extends Controller
 {
+    /**
+     * ID soal Nalar Kilat yang sedang dikerjakan — hanya soal ini yang dinilai saat submit.
+     */
+    private const KILAT_SESSION_KEY = 'uji_nalar.kilat_question_ids';
+
     /**
      * Halaman utama Uji Nalar untuk siswa.
      */
@@ -19,14 +27,15 @@ class UjiNalarController extends Controller
     {
         $user = Auth::user();
 
-        // ── Leaderboard (top 10 by xp_points) ───────────────────────────────
-        $leaderboard = User::where('role', 'siswa')
-            ->orderByDesc('xp_points')
+        // ── Leaderboard (top 10 by xp_points, tanpa akun dummy) ─────────────
+        $leaderboard = User::query()
+            ->leaderboard()
+            ->with('studentProfile:id,user_id,school')
             ->take(10)
-            ->get(['id', 'name', 'school_name', 'xp_points']);
+            ->get(['id', 'name', 'xp_points']);
 
-        $userRank = $leaderboard->search(fn($u) => $u->id === $user->id);
-        $userRank = $userRank !== false ? $userRank + 1 : null;
+        // Peringkat global, termasuk bila siswa berada di luar top 10.
+        $userRank = $user->leaderboardRank();
 
         // ── Performa Saya ────────────────────────────────────────────────────
         $attempts = QuizAttempt::where('user_id', $user->id)->get();
@@ -41,11 +50,20 @@ class UjiNalarController extends Controller
         $level       = intdiv($currentXp, 1000) + 1;
         $xpThisLevel = $currentXp % 1000;
 
-        // ── Flashcard Data (soal approved acak) ─────────────────────────────
-        $flashcardQuestions = \App\Models\Question::whereHas('quiz', fn($q) => $q->where('status', 'approved'))
+        // ── Flashcard: 10 soal approved acak dari Bank Soal (tanpa tabel flashcard) ──
+        $flashcardQuestions = $this->approvedQuestions()
             ->inRandomOrder()
             ->take(10)
-            ->get(['id', 'question_text', 'correct_answer', 'explanation']);
+            ->get()
+            ->map(fn (Question $question) => [
+                'id' => $question->id,
+                'question_text' => $question->question_text,
+                'answer' => $question->correct_answer.'. '.$question->{'option_'.strtolower($question->correct_answer)},
+                'explanation' => $question->explanation,
+            ]);
+
+        // ── Nalar Kilat: jumlah soal approved yang bisa diambil acak ─────────
+        $approvedQuestionCount = $this->approvedQuestions()->count();
 
         // ── Subjects & Kelas untuk filter ────────────────────────────────────
         $subjects = Subject::orderBy('name')->get();
@@ -68,6 +86,7 @@ class UjiNalarController extends Controller
             'level',
             'xpThisLevel',
             'flashcardQuestions',
+            'approvedQuestionCount',
             'subjects',
             'classes',
             'bankSoalQuizzes',
@@ -93,9 +112,98 @@ class UjiNalarController extends Controller
     {
         abort_unless($quiz->status === 'approved', 403);
 
-        $answers  = $request->input('answers', []);   // ['question_id' => 'A']
+        $answers  = (array) $request->input('answers', []);   // ['question_id' => 'A']
         $questions = $quiz->questions()->orderBy('order')->get();
 
+        $grading = $this->gradeAnswers($questions, $answers);
+
+        // Simpan attempt
+        QuizAttempt::create([
+            'user_id'       => Auth::id(),
+            'quiz_id'       => $quiz->id,
+            'score'         => $grading['score'],
+            'correct_count' => $grading['correctCount'],
+            'total_xp_gained' => $grading['xpGained'],
+        ]);
+
+        // Update user XP
+        Auth::user()->increment('xp_points', $grading['xpGained']);
+
+        return view('pages.siswa.uji-nalar.result', ['quiz' => $quiz] + $grading);
+    }
+
+    /**
+     * Nalar Kilat: latihan 5/10/15 soal acak dari soal yang paketnya sudah approved.
+     */
+    public function kilat(Request $request, int $jumlah)
+    {
+        $questions = $this->approvedQuestions()
+            ->inRandomOrder()
+            ->take($jumlah)
+            ->get();
+
+        if ($questions->count() < $jumlah) {
+            return redirect()->to(route('siswa.uji-nalar.index').'#nalar-kilat')
+                ->with('kilat_error', "Belum tersedia cukup soal untuk latihan {$jumlah} soal. Saat ini baru ada {$questions->count()} soal terverifikasi.");
+        }
+
+        $request->session()->put(self::KILAT_SESSION_KEY, $questions->pluck('id')->all());
+
+        return view('pages.siswa.uji-nalar.show', [
+            'questions' => $questions->values(),
+            'pageTitle' => "Nalar Kilat — {$jumlah} Soal",
+            'pageMeta' => 'Soal acak dari Bank Soal yang telah disetujui',
+            'timeLimit' => $jumlah * 60,
+            'submitUrl' => route('siswa.uji-nalar.kilat.submit'),
+        ]);
+    }
+
+    /**
+     * Submit Nalar Kilat — penilaian & XP sama dengan paket soal.
+     */
+    public function submitKilat(Request $request)
+    {
+        // pull(): satu sesi latihan hanya bisa dikumpulkan sekali.
+        $questionIds = $request->session()->pull(self::KILAT_SESSION_KEY, []);
+
+        if (empty($questionIds)) {
+            return redirect()->to(route('siswa.uji-nalar.index').'#nalar-kilat')
+                ->with('kilat_error', 'Sesi Nalar Kilat sudah berakhir atau sudah dikumpulkan. Silakan mulai latihan baru.');
+        }
+
+        $questions = $this->approvedQuestions()
+            ->whereIn('id', $questionIds)
+            ->get()
+            ->sortBy(fn (Question $question) => array_search($question->id, $questionIds))
+            ->values();
+
+        $grading = $this->gradeAnswers($questions, (array) $request->input('answers', []));
+
+        // quiz_attempts tidak dicatat: soal berasal dari beberapa paket, sedangkan
+        // quiz_attempts.quiz_id wajib menunjuk satu paket.
+        Auth::user()->increment('xp_points', $grading['xpGained']);
+
+        return view('pages.siswa.uji-nalar.result', $grading + [
+            'pageTitle' => 'Nalar Kilat — '.count($questionIds).' Soal',
+            'pageMeta' => 'Soal acak dari Bank Soal yang telah disetujui',
+            'retryUrl' => route('siswa.uji-nalar.kilat', count($questionIds)),
+            'retryLabel' => '⚡ Latihan Kilat Lagi',
+        ]);
+    }
+
+    /**
+     * Soal yang paket soalnya sudah disetujui admin — sumber Flashcard & Nalar Kilat.
+     */
+    private function approvedQuestions(): Builder
+    {
+        return Question::query()->whereHas('quiz', fn ($quiz) => $quiz->approved());
+    }
+
+    /**
+     * Penilaian jawaban untuk paket soal dan Nalar Kilat (10 XP per soal benar).
+     */
+    private function gradeAnswers(Collection $questions, array $answers): array
+    {
         $correctCount = 0;
         $results      = [];
 
@@ -120,20 +228,6 @@ class UjiNalarController extends Controller
         $score     = $total > 0 ? round(($correctCount / $total) * 100) : 0;
         $xpGained  = $correctCount * 10; // 10 XP per soal benar
 
-        // Simpan attempt
-        QuizAttempt::create([
-            'user_id'       => Auth::id(),
-            'quiz_id'       => $quiz->id,
-            'score'         => $score,
-            'correct_count' => $correctCount,
-            'total_xp_gained' => $xpGained,
-        ]);
-
-        // Update user XP
-        Auth::user()->increment('xp_points', $xpGained);
-
-        return view('pages.siswa.uji-nalar.result', compact(
-            'quiz', 'results', 'score', 'correctCount', 'total', 'xpGained'
-        ));
+        return compact('results', 'score', 'correctCount', 'total', 'xpGained');
     }
 }

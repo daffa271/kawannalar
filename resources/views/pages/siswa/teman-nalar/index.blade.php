@@ -34,8 +34,8 @@
             </div>
 
             <p class="text-sm leading-5 text-blue-800">
-                <span class="font-bold">Notifikasi Instan:</span>
-                Tautan Google Meet dikirim otomatis via Bot Telegram ke HP kamu.
+                <span class="font-bold">Info Telegram:</span>
+                Jadwal baru dan status booking diumumkan di grup Telegram KawanNalar. Tautan Google Meet sesi privat hanya muncul di halaman ini setelah booking disetujui.
             </p>
         </div>
 
@@ -48,30 +48,38 @@
         @endif
 
         {{-- Toggle Tabs --}}
-        <div class="flex rounded-xl border border-gray-200 bg-white p-1.5 shadow-sm">
+        {{-- HP: label ringkas tanpa ikon agar tidak patah baris; sm ke atas: ikon + label penuh --}}
+        <div class="grid grid-cols-3 gap-1 rounded-xl border border-gray-200 bg-white p-1.5 shadow-sm">
             <button
                 @click="tab='1on1'"
                 :class="tab==='1on1' ? 'bg-[#0A52C4] text-white shadow-md' : 'text-gray-500 hover:text-gray-800'"
-                class="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-lg px-3 py-3 text-sm font-bold leading-5 transition-all duration-200"
+                class="flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-2 py-2.5 text-center text-xs font-bold leading-4 transition-all duration-200 sm:px-3 sm:py-3 sm:text-sm sm:leading-5"
             >
                 <svg
-                    class="w-4 h-4 shrink-0"
+                    class="hidden w-4 h-4 shrink-0 sm:block"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                 >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
                 </svg>
 
-                <span>Bimbingan Privat 1-on-1</span>
+                <span class="sm:hidden">Privat 1-on-1</span>
+                <span class="hidden sm:inline">Bimbingan Privat 1-on-1</span>
             </button>
 
             <button
                 @click="tab='live'"
                 :class="tab==='live' ? 'bg-[#0A52C4] text-white shadow-md' : 'text-gray-500 hover:text-gray-800'"
-                class="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-lg px-3 py-3 text-sm font-bold leading-5 transition-all duration-200"
+                class="flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-2 py-2.5 text-center text-xs font-bold leading-4 transition-all duration-200 sm:px-3 sm:py-3 sm:text-sm sm:leading-5"
             >
                 <svg
-                    class="w-4 h-4 shrink-0"
+                    class="hidden w-4 h-4 shrink-0 sm:block"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -90,8 +98,22 @@
             <button
                 @click="tab='my-bookings'"
                 :class="tab==='my-bookings' ? 'bg-[#0A52C4] text-white shadow-md' : 'text-gray-500 hover:text-gray-800'"
-                class="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-lg px-3 py-3 text-sm font-bold leading-5 transition-all duration-200"
+                class="flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-2 py-2.5 text-center text-xs font-bold leading-4 transition-all duration-200 sm:px-3 sm:py-3 sm:text-sm sm:leading-5"
             >
+                <svg
+                    class="hidden w-4 h-4 shrink-0 sm:block"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                </svg>
+
                 <span>Booking Saya</span>
             </button>
         </div>
@@ -504,6 +526,13 @@
                                 Topik: {{ $booking->topic }}
                             </p>
                         </div>
+
+                        @if($booking->status === 'rejected')
+                            <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-xs leading-5 text-red-700">
+                                <p class="flex items-center gap-1 font-bold text-red-800"><x-icon name="info" class="h-4 w-4" /> Alasan ditolak mentor:</p>
+                                <p class="mt-0.5 break-words">{{ $booking->rejection_reason ?: 'Mentor tidak mencantumkan alasan.' }}</p>
+                            </div>
+                        @endif
 
                         <div class="flex flex-col gap-2.5 rounded-lg bg-gray-50 p-4 text-xs leading-5">
                             <div class="flex items-center gap-2 text-gray-700">

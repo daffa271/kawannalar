@@ -31,6 +31,10 @@
         <a href="{{ route('mentor.uji-nalar.index') }}" class="text-xs font-bold text-[#0A52C4] hover:underline">‹ Kembali ke Kelola Soal</a>
         <h1 class="mt-2 text-2xl font-extrabold text-gray-900 sm:text-3xl">Buat Paket Soal Baru</h1>
         <p class="mt-1 text-sm text-gray-500">Isi detail paket soal dan pertanyaan beserta opsi jawaban A–E dan pembahasannya.</p>
+        <p class="mt-2 rounded-xl bg-[#EEF4FF] px-3 py-2 text-xs leading-relaxed text-[#0A52C4]">
+            Cukup buat paket soal ini. Setelah disetujui Admin, soalnya otomatis dipakai untuk Bank Soal, Flashcard, dan Nalar Kilat — tidak perlu membuat flashcard terpisah.
+            Pembahasan akan tampil di balik kartu Flashcard.
+        </p>
     </div>
 
     @if ($errors->any())

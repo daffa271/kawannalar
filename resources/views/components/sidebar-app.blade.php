@@ -5,6 +5,17 @@ $firstName = explode(' ', trim($name))[0];
 $role = $user?->role ?? 'siswa';
 $isStudent = $role === 'siswa';
 
+// Kartu level mentor: aturan sama dengan Uji Nalar (tiap 1000 XP = 1 level).
+$mentorXp = (int) ($user?->xp_points ?? 0);
+$mentorLevel = intdiv($mentorXp, 1000) + 1;
+$mentorLevelPercent = round(($mentorXp % 1000) / 1000 * 100);
+
+// Kelengkapan profil siswa: field student_profiles yang terisi / total field profil.
+$profileFields = ['whatsapp', 'school', 'grade', 'target_major', 'target_university'];
+$studentProfile = $isStudent ? $user?->studentProfile : null;
+$profileFilled = collect($profileFields)->filter(fn ($field) => filled($studentProfile?->{$field}))->count();
+$profilePercent = (int) round($profileFilled / count($profileFields) * 100);
+
 $studentMainItems = [
 [
 'label' => 'Dashboard Utama',
@@ -304,23 +315,23 @@ default => [],
             @if ($role === 'mentor')
             <div class="rounded-2xl border border-[#0A52C4]/20 bg-gradient-to-br from-[#EEF4FF] to-[#E5EFFF] p-4 shadow-sm">
                 <div class="flex items-center justify-between">
-                    <p class="text-xs font-extrabold text-[#0A52C4]">Level 4 · Inspirator Aktif</p>
-                    <span class="text-xs font-extrabold text-[#F28C28]">1,250 XP</span>
+                    <p class="text-xs font-extrabold text-[#0A52C4]">Level {{ $mentorLevel }} · Inspirator Aktif</p>
+                    <span class="text-xs font-extrabold text-[#F28C28]">{{ number_format($mentorXp) }} XP</span>
                 </div>
                 <p class="mt-1 text-[11px] text-gray-500 leading-snug">Terus aktif berbagi modul &amp; paket soal!</p>
                 <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-white/80 shadow-inner">
-                    <div class="h-full w-3/4 rounded-full bg-gradient-to-r from-[#0A52C4] to-[#F28C28]"></div>
+                    <div class="h-full rounded-full bg-gradient-to-r from-[#0A52C4] to-[#F28C28]" style="width: {{ $mentorLevelPercent }}%"></div>
                 </div>
             </div>
             @elseif ($role === 'siswa')
             <div class="rounded-2xl border border-[#F28C28]/25 bg-gradient-to-br from-[#FFF9F2] to-[#FFF4E5] p-4 shadow-sm">
                 <div class="flex items-center justify-between">
-                    <p class="text-xs font-extrabold text-gray-800">Lengkapi profilmu</p>
-                    <span class="text-xs font-extrabold text-[#F28C28]">80%</span>
+                    <p class="text-xs font-extrabold text-gray-800">{{ $profilePercent === 100 ? 'Profil lengkap' : 'Lengkapi profilmu' }}</p>
+                    <span class="text-xs font-extrabold text-[#F28C28]">{{ $profilePercent }}%</span>
                 </div>
-                <p class="mt-1 text-[11px] text-gray-500 leading-snug">Dapatkan rekomendasi belajar yang lebih tepat.</p>
+                <p class="mt-1 text-[11px] text-gray-500 leading-snug">{{ $profilePercent === 100 ? 'Data sekolah & target kuliahmu sudah tercatat.' : 'Dapatkan rekomendasi belajar yang lebih tepat.' }}</p>
                 <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-white/80 shadow-inner">
-                    <div class="h-full w-4/5 rounded-full bg-[#F28C28]"></div>
+                    <div class="h-full rounded-full bg-[#F28C28]" style="width: {{ $profilePercent }}%"></div>
                 </div>
             </div>
             @else

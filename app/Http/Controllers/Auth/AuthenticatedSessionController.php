@@ -32,10 +32,12 @@ class AuthenticatedSessionController extends Controller
         if (in_array($user->status, ['pending', 'rejected'], true)) {
             Auth::logout();
 
+            $reason = $user->rejection_reason ? ' Alasan: '.rtrim($user->rejection_reason, '. ').'.' : '';
+
             throw ValidationException::withMessages([
                 'email' => $user->status === 'pending'
                     ? 'Akun Mentor Anda masih dalam proses verifikasi Admin. Silakan tunggu konfirmasi via WhatsApp.'
-                    : 'Pendaftaran mentor Anda ditolak oleh Admin. Silakan hubungi tim KawanNalar.',
+                    : 'Pendaftaran mentor Anda ditolak oleh Admin.'.$reason.' Silakan hubungi tim KawanNalar.',
             ]);
         }
 

@@ -69,22 +69,10 @@
                         ❌ Tolak
                     </button>
                 @else
-                    <form action="{{ route('mentor.teman-nalar.booking.approve', $booking->id) }}" method="POST" class="flex-1">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit"
-                            class="w-full rounded-lg bg-green-500 py-2 text-xs font-bold text-white hover:bg-green-600 active:scale-95 transition">
-                            ✅ Setujui
-                        </button>
-                    </form>
-                    <form action="{{ route('mentor.teman-nalar.booking.reject', $booking->id) }}" method="POST" class="flex-1">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit"
-                            class="w-full rounded-lg border border-red-200 bg-red-50 py-2 text-xs font-bold text-red-600 hover:bg-red-100 active:scale-95 transition">
-                            ❌ Tolak
-                        </button>
-                    </form>
+                    @include('pages.mentor.teman-nalar.partials.booking-moderation-buttons', [
+                        'approveClass' => 'flex-1 rounded-lg bg-green-500 py-2 text-xs font-bold text-white hover:bg-green-600 active:scale-95 transition',
+                        'rejectClass' => 'flex-1 rounded-lg border border-red-200 bg-red-50 py-2 text-xs font-bold text-red-600 hover:bg-red-100 active:scale-95 transition',
+                    ])
                 @endif
             </div>
         </div>

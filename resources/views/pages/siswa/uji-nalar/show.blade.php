@@ -1,10 +1,17 @@
-<x-layouts.siswa title="{{ $quiz->title }} — Uji Nalar KawanNalar">
+@php
+    // Dipakai paket soal (Bank Soal) dan Nalar Kilat; paket soal memakai data $quiz.
+    $pageTitle = $pageTitle ?? $quiz->title;
+    $pageMeta = $pageMeta ?? (($quiz->subject->name ?? '').' · Kelas '.$quiz->class_level);
+    $timeLimit = $timeLimit ?? $quiz->total_questions * 60;
+    $submitUrl = $submitUrl ?? route('siswa.uji-nalar.submit', $quiz);
+@endphp
+<x-layouts.siswa title="{{ $pageTitle }} — Uji Nalar KawanNalar">
 <div class="mx-auto max-w-3xl px-1 sm:px-0"
      x-data="{
         current: 0,
         total: {{ $questions->count() }},
         answers: {},
-        timeLeft: {{ $quiz->total_questions * 60 }},
+        timeLeft: {{ $timeLimit }},
         timer: null,
         started: false,
         finished: false,
@@ -25,8 +32,8 @@
     {{-- Header --}}
     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <p class="text-xs text-gray-400 font-semibold">{{ $quiz->subject->name ?? '' }} · Kelas {{ $quiz->class_level }}</p>
-            <h1 class="text-base font-extrabold text-gray-900 sm:text-lg mt-0.5">{{ $quiz->title }}</h1>
+            <p class="text-xs text-gray-400 font-semibold">{{ $pageMeta }}</p>
+            <h1 class="text-base font-extrabold text-gray-900 sm:text-lg mt-0.5">{{ $pageTitle }}</h1>
         </div>
         {{-- Timer --}}
         <div class="flex items-center gap-2 rounded-2xl border border-gray-100 bg-white px-4 py-2.5 shadow-sm shrink-0">
@@ -48,7 +55,7 @@
         </div>
     </div>
 
-    <form action="{{ route('siswa.uji-nalar.submit', $quiz) }}" method="POST" id="quiz-form">
+    <form action="{{ $submitUrl }}" method="POST" id="quiz-form">
         @csrf
         {{-- Question cards --}}
         @foreach($questions as $i => $question)

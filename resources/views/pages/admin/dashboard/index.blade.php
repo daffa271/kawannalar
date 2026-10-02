@@ -91,19 +91,19 @@
         {{-- Kolom Kiri: Antrean Verifikasi Mentor & Modul --}}
         <div class="space-y-5 lg:col-span-6">
             <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-                    <div>
-                        <h2 class="font-extrabold text-gray-900 text-sm sm:text-base flex items-center gap-2">
+                <div class="flex items-start justify-between gap-3 mb-4 border-b border-gray-100 pb-3">
+                    <div class="min-w-0 flex-1">
+                        <h2 class="font-extrabold text-gray-900 text-sm sm:text-base flex flex-wrap items-center gap-x-2 gap-y-1">
                             🛡️ Pendaftaran Mentor Pending
                             @if($pendingMentorCount > 0)
-                            <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold text-amber-700">
+                            <span class="whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold text-amber-700">
                                 {{ $pendingMentorCount }} Baru
                             </span>
                             @endif
                         </h2>
                         <p class="text-xs text-gray-400 mt-0.5">Tinjau berkas pendaftaran mahasiswa calon mentor</p>
                     </div>
-                    <a href="{{ route('admin.verification.index') }}" class="text-xs font-bold text-[#0A52C4] hover:underline">
+                    <a href="{{ route('admin.verification.index') }}" class="shrink-0 whitespace-nowrap pt-0.5 text-xs font-bold text-[#0A52C4] hover:underline">
                         Lihat Semua ›
                     </a>
                 </div>
@@ -122,10 +122,17 @@
                                 {{ $mentor->mentorProfile?->university ?? 'Perguruan Tinggi' }} · {{ $mentor->mentorProfile?->major ?? 'Jurusan' }}
                             </p>
                         </div>
-                        <a href="{{ route('admin.verification.index') }}"
+                        @if ($mentor->mentorProfile?->ktm_path)
+                        <a href="{{ route('admin.mentors.ktm', $mentor->id) }}" target="_blank" rel="noopener"
                            class="shrink-0 rounded-xl border border-[#0A52C4] px-3 py-1.5 text-[11px] font-bold text-[#0A52C4] hover:bg-[#EEF4FF] transition">
                             Review KTM
                         </a>
+                        @else
+                        <a href="{{ route('admin.verification.index') }}"
+                           class="shrink-0 rounded-xl border border-[#0A52C4] px-3 py-1.5 text-[11px] font-bold text-[#0A52C4] hover:bg-[#EEF4FF] transition">
+                            Review Berkas
+                        </a>
+                        @endif
                     </div>
                     @endforeach
                 </div>
@@ -136,19 +143,19 @@
         {{-- Kolom Kanan: Antrean Uji Nalar Soal --}}
         <div class="space-y-5 lg:col-span-6">
             <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-                    <div>
-                        <h2 class="font-extrabold text-gray-900 text-sm sm:text-base flex items-center gap-2">
+                <div class="flex items-start justify-between gap-3 mb-4 border-b border-gray-100 pb-3">
+                    <div class="min-w-0 flex-1">
+                        <h2 class="font-extrabold text-gray-900 text-sm sm:text-base flex flex-wrap items-center gap-x-2 gap-y-1">
                             ⚡ Paket Soal Uji Nalar Pending
                             @if($pendingQuizCount > 0)
-                            <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold text-amber-700">
+                            <span class="whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold text-amber-700">
                                 {{ $pendingQuizCount }} Paket
                             </span>
                             @endif
                         </h2>
                         <p class="text-xs text-gray-400 mt-0.5">Soal evaluasi yang disubmit mentor untuk disetujui</p>
                     </div>
-                    <a href="{{ route('admin.quizzes.index') }}" class="text-xs font-bold text-[#0A52C4] hover:underline">
+                    <a href="{{ route('admin.quizzes.index') }}" class="shrink-0 whitespace-nowrap pt-0.5 text-xs font-bold text-[#0A52C4] hover:underline">
                         Lihat Semua ›
                     </a>
                 </div>

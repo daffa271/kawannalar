@@ -31,6 +31,16 @@
     </div>
     @endif
 
+    {{-- Alur konten Uji Nalar --}}
+    <div class="rounded-2xl border border-[#0A52C4]/15 bg-[#EEF4FF] p-4 sm:p-5">
+        <p class="text-sm font-extrabold text-[#0A52C4]">ℹ️ Kamu cukup membuat paket soal</p>
+        <p class="mt-1 text-sm leading-relaxed text-gray-700">Bank Soal adalah sumber utama soal. Setelah disetujui Admin, soal dapat digunakan secara otomatis untuk Bank Soal, Flashcard, dan Nalar Kilat.</p>
+        <ul class="mt-3 grid gap-2 text-xs text-gray-600 sm:grid-cols-2">
+            <li class="rounded-xl bg-white/70 px-3 py-2">📋 Flashcard dibuat otomatis dari soal yang telah disetujui.</li>
+            <li class="rounded-xl bg-white/70 px-3 py-2">⚡ Nalar Kilat mengambil soal secara acak dari Bank Soal yang telah disetujui.</li>
+        </ul>
+    </div>
+
     {{-- Filter / Counter Bar --}}
     <div class="grid grid-cols-3 gap-4">
         <div class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm text-center">

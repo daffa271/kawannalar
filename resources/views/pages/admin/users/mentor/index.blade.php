@@ -52,6 +52,8 @@
     </div>
     @endif
 
+    <x-moderation-modal />
+
     {{-- Table --}}
     <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
@@ -127,13 +129,11 @@
                         <td class="px-3 py-3.5 text-right pr-5">
                             <div class="flex items-center justify-end gap-2">
                                 @if($mentor->status !== 'active')
-                                <form action="{{ route('admin.mentors.approve', $mentor->id) }}" method="POST" class="inline">
-                                    @csrf @method('PATCH')
-                                    <button type="submit" class="rounded-lg border border-green-300 bg-green-50 px-2.5 py-1 text-xs font-bold text-green-700 hover:bg-green-100 transition flex items-center gap-1">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                        Verify
-                                    </button>
-                                </form>
+                                <x-moderation-button :action="route('admin.mentors.approve', $mentor->id)" title="Setujui pendaftaran mentor?" :subject="$mentor->name" note="Mentor akan langsung bisa login dan mengelola sesi bimbingan."
+                                    class="rounded-lg border border-green-300 bg-green-50 px-2.5 py-1 text-xs font-bold text-green-700 hover:bg-green-100 transition flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    Verify
+                                </x-moderation-button>
                                 @endif
                                 <a href="{{ route('admin.mentors.ktm', $mentor->id) }}" class="rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-bold text-gray-700 hover:bg-gray-50 transition">Detail</a>
                                 <form action="{{ route('admin.users.toggle-suspend', $mentor->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin mengubah status suspend mentor ini?');">

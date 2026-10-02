@@ -18,6 +18,7 @@ class Module extends Model
         'approved_by',
         'approved_at',
         'download_count',
+        'rejection_reason',
     ];
 
     protected function casts(): array

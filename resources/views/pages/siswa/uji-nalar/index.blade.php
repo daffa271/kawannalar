@@ -24,14 +24,14 @@
                         Uji Nalar: Asah Kemampuan &amp; Raih Poin Peringkat Magetan!
                     </h1>
                     <p class="mt-2 text-sm leading-relaxed text-blue-100">
-                        Latihan mikro 5 menit, persiapan ujian sekolah PTS/PAS,<br>atau tryout UTBK riil.
+                        Belajar dari soal yang sudah diverifikasi lewat Flashcard,<br>Nalar Kilat, dan paket Bank Soal.
                     </p>
                     <div class="mt-5 flex flex-wrap gap-3">
                         <a href="#nalar-kilat" class="inline-flex items-center gap-2 rounded-xl bg-[#F28C28] px-5 py-2.5 text-sm font-bold text-white shadow hover:bg-[#E07D1C] transition-all">
                             ⚡ Mulai Latihan Kilat
                         </a>
-                        <a href="#simulasi-utbk" class="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-bold text-white hover:bg-white/20 transition-all">
-                            🎯 Simulasi UTBK
+                        <a href="#flashcard" class="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-bold text-white hover:bg-white/20 transition-all">
+                            📋 Flashcard
                         </a>
                     </div>
                 </div>
@@ -39,86 +39,134 @@
             </section>
 
             {{-- ── 2. NALAR FLASHCARD ──────────────────────────────────── --}}
-            <section
+            <section id="flashcard"
                 x-data="{
                     cards: @js($flashcardQuestions->values()),
+                    started: new URLSearchParams(window.location.search).has('kartu'),
+                    finished: false,
                     current: 0,
                     flipped: false,
+                    understood: {},
                     get total() { return this.cards.length },
-                    next()  { if (this.current < this.total - 1) { this.current++; this.flipped = false; } },
+                    get understoodCount() { return Object.values(this.understood).filter(Boolean).length },
+                    start() { this.started = true; this.finished = false; this.current = 0; this.flipped = false; this.understood = {}; },
+                    next()  { if (this.current < this.total - 1) { this.current++; this.flipped = false; } else { this.finished = true; } },
                     prev()  { if (this.current > 0) { this.current--; this.flipped = false; } },
+                    mark(value) { this.understood[this.current] = value; this.next(); },
                     flip()  { this.flipped = !this.flipped }
                 }"
                 class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6"
             >
-                <div class="flex items-center justify-between gap-2 mb-4">
-                    <div class="flex items-center gap-2">
-                        <span class="text-base">📋</span>
-                        <h2 class="font-extrabold text-gray-900 text-sm sm:text-base">Nalar Flashcard: Tebak Rumus &amp; Istilah Hari Ini</h2>
-                        <span class="text-gray-400 cursor-help text-xs" title="Klik kartu untuk melihat jawaban">ⓘ</span>
-                    </div>
-                    <span class="text-xs font-semibold text-gray-400" x-text="`Kartu ${current + 1} dari ${total}`"></span>
-                </div>
-
-                {{-- Card flip area --}}
-                <div class="relative h-44 sm:h-52 cursor-pointer select-none" @click="flip()" style="perspective: 1000px;">
-                    <div class="absolute inset-0 transition-transform duration-500"
-                         :style="flipped ? 'transform: rotateY(180deg); transform-style: preserve-3d;' : 'transform: rotateY(0deg); transform-style: preserve-3d;'">
-                        {{-- Front --}}
-                        <div class="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border-2 border-gray-100 bg-white shadow-md px-6 text-center backface-hidden"
-                             style="backface-visibility: hidden;">
-                            <template x-if="cards[current]">
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-700 leading-relaxed" x-text="cards[current].question_text"></p>
-                                    <p class="mt-4 text-xs text-gray-400 flex items-center justify-center gap-1.5">
-                                        <span>👆</span> Ketuk kartu untuk membalik &amp; lihat jawaban
-                                    </p>
-                                </div>
-                            </template>
+                <div class="flex items-start justify-between gap-2 mb-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">📋</span>
+                            <h2 class="font-extrabold text-gray-900 text-sm sm:text-base">Nalar Flashcard</h2>
                         </div>
-                        {{-- Back --}}
-                        <div class="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border-2 border-[#0A52C4]/20 bg-[#EEF4FF] shadow-md px-6 text-center backface-hidden"
-                             style="backface-visibility: hidden; transform: rotateY(180deg);">
-                            <template x-if="cards[current]">
-                                <div>
-                                    <p class="text-sm text-gray-700 leading-relaxed" x-text="cards[current].explanation ?? 'Tidak ada penjelasan.'"></p>
-                                </div>
-                            </template>
+                        <p class="mt-0.5 text-xs text-gray-500">Belajar cepat dari soal-soal yang telah diverifikasi.</p>
+                    </div>
+                    <span x-show="started && !finished" x-cloak class="shrink-0 text-xs font-semibold text-gray-400" x-text="`Kartu ${current + 1} dari ${total}`"></span>
+                </div>
+
+                @if ($flashcardQuestions->isEmpty())
+                <div class="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center">
+                    <p class="text-sm font-bold text-gray-700">Belum ada soal yang disetujui.</p>
+                    <p class="mt-1 text-xs text-gray-500">Flashcard akan muncul otomatis setelah paket soal mentor disetujui admin.</p>
+                </div>
+                @else
+                {{-- Mulai --}}
+                <div x-show="!started" class="rounded-2xl border-2 border-dashed border-[#0A52C4]/20 bg-[#F4F7FF] px-6 py-8 text-center">
+                    <p class="text-sm font-bold text-gray-800">{{ $flashcardQuestions->count() }} kartu acak dari Bank Soal</p>
+                    <p class="mx-auto mt-1 max-w-md text-xs leading-relaxed text-gray-500">Baca soalnya, pikirkan jawabanmu, lalu balik kartu untuk melihat jawaban &amp; pembahasan.</p>
+                    <button type="button" @click="start()" class="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#0A52C4] px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#0842A0]">
+                        ▶ Mulai Flashcard
+                    </button>
+                </div>
+
+                {{-- Kartu --}}
+                <div x-show="started && !finished" x-cloak>
+                    <div class="relative h-44 sm:h-52 cursor-pointer select-none" @click="flip()" style="perspective: 1000px;">
+                        <div class="absolute inset-0 transition-transform duration-500"
+                             :style="flipped ? 'transform: rotateY(180deg); transform-style: preserve-3d;' : 'transform: rotateY(0deg); transform-style: preserve-3d;'">
+                            {{-- Front --}}
+                            <div class="absolute inset-0 flex flex-col items-center justify-center overflow-y-auto rounded-2xl border-2 border-gray-100 bg-white shadow-md px-6 text-center backface-hidden"
+                                 style="backface-visibility: hidden;">
+                                <template x-if="cards[current]">
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-700 leading-relaxed" x-text="cards[current].question_text"></p>
+                                        <p class="mt-4 text-xs text-gray-400 flex items-center justify-center gap-1.5">
+                                            <span>👆</span> Ketuk kartu untuk melihat jawaban &amp; pembahasan
+                                        </p>
+                                    </div>
+                                </template>
+                            </div>
+                            {{-- Back --}}
+                            <div class="absolute inset-0 flex flex-col items-center justify-center overflow-y-auto rounded-2xl border-2 border-[#0A52C4]/20 bg-[#EEF4FF] shadow-md px-6 text-center backface-hidden"
+                                 style="backface-visibility: hidden; transform: rotateY(180deg);">
+                                <template x-if="cards[current]">
+                                    <div>
+                                        <p class="text-[11px] font-bold uppercase tracking-wider text-[#0A52C4]">Jawaban</p>
+                                        <p class="mt-1 text-sm font-bold text-gray-900 leading-relaxed" x-text="cards[current].answer"></p>
+                                        <p class="mt-3 text-xs text-gray-600 leading-relaxed" x-text="cards[current].explanation || 'Belum ada pembahasan untuk soal ini.'"></p>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
                     </div>
+
+                    {{-- Dots --}}
+                    <div class="mt-4 flex items-center justify-center gap-1.5">
+                        <template x-for="(c, i) in cards" :key="i">
+                            <button @click="current = i; flipped = false"
+                                    class="h-2 rounded-full transition-all duration-300"
+                                    :class="i === current ? 'w-5 bg-[#0A52C4]' : 'w-2 bg-gray-300'"></button>
+                        </template>
+                    </div>
+
+                    {{-- Nav + Actions (penanda paham hanya untuk rekap latihan ini) --}}
+                    <div class="mt-4 flex items-center justify-between gap-3">
+                        <button @click="prev()" :disabled="current === 0" aria-label="Kartu sebelumnya"
+                                class="flex items-center justify-center rounded-full w-10 h-10 shrink-0 bg-[#0A52C4] text-white text-base font-bold shadow-sm transition hover:bg-[#0842A0] disabled:opacity-30 disabled:cursor-not-allowed">‹</button>
+                        <div class="flex flex-1 gap-3">
+                            <button type="button" @click="mark(false)" class="flex-1 rounded-xl border-2 border-red-200 bg-red-50 py-2.5 text-xs font-bold text-red-600 hover:bg-red-100 transition">
+                                ✕ Belum Paham
+                            </button>
+                            <button type="button" @click="mark(true)" class="flex-1 rounded-xl bg-[#22C55E] py-2.5 text-xs font-bold text-white hover:bg-[#16A34A] transition shadow-sm">
+                                ✓ Sudah Paham
+                            </button>
+                        </div>
+                        <button @click="next()" :aria-label="current === total - 1 ? 'Selesai' : 'Kartu berikutnya'"
+                                class="flex items-center justify-center rounded-full w-10 h-10 shrink-0 bg-[#0A52C4] text-white text-base font-bold shadow-sm transition hover:bg-[#0842A0]">›</button>
+                    </div>
                 </div>
 
-                {{-- Dots --}}
-                <div class="mt-4 flex items-center justify-center gap-1.5">
-                    <template x-for="(c, i) in cards" :key="i">
-                        <button @click="current = i; flipped = false"
-                                class="h-2 rounded-full transition-all duration-300"
-                                :class="i === current ? 'w-5 bg-[#0A52C4]' : 'w-2 bg-gray-300'"></button>
-                    </template>
-                </div>
-
-                {{-- Nav + Actions --}}
-                <div class="mt-4 flex items-center justify-between gap-3">
-                    <button @click="prev()" :disabled="current === 0"
-                            class="flex items-center justify-center rounded-full w-10 h-10 shrink-0 bg-[#0A52C4] text-white text-base font-bold shadow-sm transition hover:bg-[#0842A0] disabled:opacity-30 disabled:cursor-not-allowed">‹</button>
-                    <div class="flex flex-1 gap-3">
-                        <button class="flex-1 rounded-xl border-2 border-red-200 bg-red-50 py-2.5 text-xs font-bold text-red-600 hover:bg-red-100 transition">
-                            ✕ Belum Paham
+                {{-- Selesai --}}
+                <div x-show="finished" x-cloak class="rounded-2xl border-2 border-dashed border-[#22C55E]/30 bg-green-50/60 px-6 py-8 text-center">
+                    <p class="text-sm font-extrabold text-gray-900">🎉 Flashcard selesai!</p>
+                    <p class="mt-1 text-xs text-gray-600" x-text="`Kamu menandai ${understoodCount} dari ${total} kartu sebagai sudah paham.`"></p>
+                    <div class="mt-4 flex flex-wrap justify-center gap-3">
+                        <button type="button" @click="start()" class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-700 transition hover:bg-gray-50">
+                            🔄 Ulangi Kartu Ini
                         </button>
-                        <button class="flex-1 rounded-xl bg-[#22C55E] py-2.5 text-xs font-bold text-white hover:bg-[#16A34A] transition shadow-sm">
-                            ✓ Sudah Paham (+5 XP)
+                        {{-- Link "#flashcard" saja tidak me-reload halaman; query unik memaksa server mengacak kartu baru --}}
+                        <button type="button" @click="window.location.assign(@js(route('siswa.uji-nalar.index')) + '?kartu=' + Date.now() + '#flashcard')" class="rounded-xl bg-[#0A52C4] px-4 py-2.5 text-xs font-bold text-white transition hover:bg-[#0842A0]">
+                            🔀 Kartu Acak Baru
                         </button>
                     </div>
-                    <button @click="next()" :disabled="current === total - 1"
-                            class="flex items-center justify-center rounded-full w-10 h-10 shrink-0 bg-[#0A52C4] text-white text-base font-bold shadow-sm transition hover:bg-[#0842A0] disabled:opacity-30 disabled:cursor-not-allowed">›</button>
                 </div>
+                @endif
             </section>
 
             {{-- ── 3. GRID MODE LATIHAN ────────────────────────────────── --}}
             <div class="grid gap-5 sm:grid-cols-3" id="nalar-kilat">
 
                 {{-- A. Nalar Kilat --}}
-                <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm"
+                     x-data="{
+                        jumlah: 5,
+                        available: {{ $approvedQuestionCount }},
+                        urls: @js(collect([5, 10, 15])->mapWithKeys(fn ($n) => [$n => route('siswa.uji-nalar.kilat', $n)]))
+                     }">
                     <div class="flex items-start gap-2 mb-3">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFF3E5] text-lg">⚡</span>
                         <div>
@@ -126,19 +174,31 @@
                             <p class="text-[11px] text-[#F28C28] font-semibold">(Micro-Practice)</p>
                         </div>
                     </div>
-                    <p class="text-xs text-gray-500 mb-4 leading-relaxed">Latihan cepat 5–15 soal saat waktu luang.</p>
+                    <p class="text-xs text-gray-500 leading-relaxed">Latihan singkat 5, 10, atau 15 soal.</p>
+                    <p class="mt-1 mb-4 text-[11px] text-gray-400 leading-relaxed">Soal diambil acak dari Bank Soal yang telah disetujui ({{ $approvedQuestionCount }} soal tersedia).</p>
+                    @if (session('kilat_error'))
+                    <div class="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-800">
+                        {{ session('kilat_error') }}
+                    </div>
+                    @endif
                     <div class="grid grid-cols-3 gap-2 mb-4">
                         @foreach([5, 10, 15] as $n)
-                        <a href="{{ route('siswa.uji-nalar.index') }}?kilat={{ $n }}"
-                           class="rounded-xl border border-[#F28C28]/30 bg-[#FFF8F0] py-2 text-center text-xs font-bold text-[#C26A13] hover:bg-[#F28C28] hover:text-white hover:border-[#F28C28] transition-all">
+                        <button type="button" @click="jumlah = {{ $n }}"
+                                :class="jumlah === {{ $n }} ? 'border-[#F28C28] bg-[#F28C28] text-white' : 'border-[#F28C28]/30 bg-[#FFF8F0] text-[#C26A13] hover:bg-[#FFE9D2]'"
+                                class="rounded-xl border py-2 text-center text-xs font-bold transition-all">
                             {{ $n }} Soal
-                        </a>
+                        </button>
                         @endforeach
                     </div>
-                    <a href="{{ route('siswa.uji-nalar.index') }}?kilat=5"
+                    <p x-show="jumlah > available" x-cloak class="mb-2 text-[11px] font-semibold text-amber-700">Belum tersedia cukup soal untuk latihan ini.</p>
+                    <a href="{{ route('siswa.uji-nalar.kilat', 5) }}" :href="urls[jumlah]" x-show="jumlah <= available"
                        class="block w-full rounded-xl bg-[#F28C28] py-2.5 text-center text-xs font-bold text-white hover:bg-[#E07D1C] transition">
                         🚀 Mulai Latihan Kilat
                     </a>
+                    <button type="button" disabled x-show="jumlah > available" x-cloak
+                            class="block w-full rounded-xl bg-gray-200 py-2.5 text-center text-xs font-bold text-gray-400 cursor-not-allowed">
+                        🚀 Mulai Latihan Kilat
+                    </button>
                 </div>
 
                 {{-- B. Bank Soal Sekolah --}}
@@ -147,10 +207,10 @@
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#E8F5E9] text-lg">📗</span>
                         <div>
                             <h3 class="font-extrabold text-gray-900 text-sm">Bank Soal Sekolah</h3>
-                            <p class="text-[11px] text-[#22863A] font-semibold">(PTS / PAS)</p>
+                            <p class="text-[11px] text-[#22863A] font-semibold">(Paket Soal)</p>
                         </div>
                     </div>
-                    <p class="text-xs text-gray-500 mb-4 leading-relaxed">Persiapan ulangan harian &amp; semesteran Kelas 10, 11, 12.</p>
+                    <p class="text-xs text-gray-500 mb-4 leading-relaxed">Latihan berdasarkan paket soal.</p>
                     <div class="space-y-2 mb-4">
                         <select x-model="kelas"
                                 class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700 focus:border-[#0A52C4] focus:outline-none focus:ring-1 focus:ring-[#0A52C4]">
@@ -178,21 +238,13 @@
                     <div class="flex items-start gap-2 mb-3">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFF0F0] text-lg">🎯</span>
                         <div>
-                            <h3 class="font-extrabold text-gray-900 text-sm">Simulasi Riil UTBK</h3>
-                            <p class="text-[11px] text-[#DC2626] font-semibold">(Full Tryout)</p>
+                            <h3 class="font-extrabold text-gray-900 text-sm">Simulasi UTBK</h3>
+                            <span class="mt-0.5 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-500">Segera Hadir</span>
                         </div>
                     </div>
-                    <p class="text-xs text-gray-500 mb-4 leading-relaxed">Simulasi tryout lengkap dengan timer 195 menit &amp; pembobotan IRT.</p>
-                    <div class="mb-4 space-y-2">
-                        <div class="flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2 text-xs text-gray-600">
-                            <span>⏱</span> <span>195 Menit</span>
-                        </div>
-                        <div class="flex items-center gap-2 rounded-xl bg-[#FFF8F0] px-3 py-2 text-xs font-semibold text-[#C26A13]">
-                            <span>🏆</span> <span>+100 XP Hadiah</span>
-                        </div>
-                    </div>
-                    <button class="w-full rounded-xl bg-[#DC2626] py-2.5 text-xs font-bold text-white hover:bg-[#B91C1C] transition">
-                        🔥 Ikuti Simulasi UTBK
+                    <p class="text-xs text-gray-500 mb-4 leading-relaxed">Fitur simulasi UTBK sedang disiapkan. Sementara itu, berlatihlah lewat Nalar Kilat dan Bank Soal.</p>
+                    <button type="button" disabled class="w-full rounded-xl bg-gray-200 py-2.5 text-xs font-bold text-gray-400 cursor-not-allowed">
+                        Segera Hadir
                     </button>
                 </div>
             </div>
@@ -233,8 +285,8 @@
         ═══════════════════════════════════════════════════════ --}}
         <aside class="space-y-5 lg:col-span-4">
 
-            {{-- ── PAPAN PERINGKAT ─────────────────────────────── --}}
-            <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            {{-- ── PAPAN PERINGKAT (tujuan "Lihat Peringkat Lengkap" di dashboard) ── --}}
+            <section id="peringkat" class="scroll-mt-24 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="font-extrabold text-gray-900 text-sm flex items-center gap-1.5">
                         <span>🏆</span> Papan Peringkat Pelajar Magetan
@@ -297,7 +349,7 @@
                                 @endif
                             </p>
                             <p class="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5 truncate">
-                                <span>🏫</span> {{ $leader->school_name ?? '-' }}
+                                <span>🏫</span> {{ $leader->studentProfile?->school ?? '-' }}
                             </p>
                         </div>
                         <span class="text-xs font-extrabold text-[#F28C28] shrink-0">{{ number_format($leader->xp_points) }} XP</span>
@@ -319,7 +371,7 @@
                                     {{ $user->name }}
                                     <span class="text-[9px] bg-[#0A52C4] text-white px-1.5 py-0.5 rounded-full ml-1">Kamu</span>
                                 </p>
-                                <p class="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">🏫 {{ $user->school_name ?? '-' }}</p>
+                                <p class="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">🏫 {{ $user->studentProfile?->school ?? '-' }}</p>
                             </div>
                             <span class="text-xs font-extrabold text-[#F28C28] shrink-0">{{ number_format($user->xp_points) }} XP</span>
                         </div>

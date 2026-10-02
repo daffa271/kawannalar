@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RejectionReasonRequest;
 use App\Models\Module;
 use App\Models\Quiz;
 use App\Models\User;
@@ -60,18 +61,20 @@ class AdminMentorVerificationController extends Controller
             'status' => 'active',
             'approved_by' => $request->user()->id,
             'approved_at' => now(),
+            'rejection_reason' => null,
         ]);
 
         return back()->with('status', 'Mentor berhasil disetujui! Mentor kini sudah bisa login.');
     }
 
-    public function reject(int $id): RedirectResponse
+    public function reject(RejectionReasonRequest $request, int $id): RedirectResponse
     {
         $mentor = $this->pendingMentor($id);
         $mentor->update([
             'status' => 'rejected',
             'approved_by' => null,
             'approved_at' => null,
+            'rejection_reason' => $request->validated('reason'),
         ]);
 
         return back()->with('status', 'Pendaftaran mentor berhasil ditolak.');
@@ -83,17 +86,19 @@ class AdminMentorVerificationController extends Controller
             'status' => 'approved',
             'approved_by' => $request->user()->id,
             'approved_at' => now(),
+            'rejection_reason' => null,
         ]);
 
         return back()->with('status', 'Modul berhasil disetujui dan dapat dilihat siswa.');
     }
 
-    public function rejectModule(Request $request, Module $module): RedirectResponse
+    public function rejectModule(RejectionReasonRequest $request, Module $module): RedirectResponse
     {
         $module->update([
             'status' => 'rejected',
             'approved_by' => $request->user()->id,
             'approved_at' => now(),
+            'rejection_reason' => $request->validated('reason'),
         ]);
 
         return back()->with('status', 'Modul berhasil ditolak dan tidak akan tampil di ruang berbagi.');

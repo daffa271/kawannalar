@@ -11,10 +11,10 @@
 
     <div @click.outside="showModal = false"
         x-data="{
-            type: '1on1',
-            topic: '',
-            startTime: '',
-            endTime: '',
+            type: @js(old('session_type', '1on1')),
+            topic: @js(old('topic', '')),
+            startTime: @js(old('start_time', '')),
+            endTime: @js(old('end_time', '')),
             get durationVal() {
                 if (!this.startTime || !this.endTime) return '';
                 const [startH, startM] = this.startTime.split(':').map(Number);
@@ -80,6 +80,7 @@
                         Tanggal <span class="text-red-500">*</span>
                     </label>
                     <input type="date" name="date"
+                        min="{{ now()->toDateString() }}" value="{{ old('date') }}"
                         :required="type === '1on1'"
                         class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-[#0A52C4] focus:ring-1 focus:ring-[#0A52C4] outline-none">
                 </div>
@@ -114,7 +115,7 @@
                         <option>Curhat</option>
                         <option>Lainnya</option>
                     </select>
-                    <input type="text" name="custom_topic" x-show="topic === 'Lainnya'" x-cloak
+                    <input type="text" name="custom_topic" x-show="topic === 'Lainnya'" x-cloak value="{{ old('custom_topic') }}"
                         :required="type === '1on1' && topic === 'Lainnya'"
                         placeholder="Tulis topik custom"
                         class="mt-2 w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-[#0A52C4] focus:ring-1 focus:ring-[#0A52C4] outline-none">
@@ -146,7 +147,7 @@
                     <label class="block text-sm font-bold text-gray-700 mb-1">
                         Judul Kelas <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" name="title"
+                    <input type="text" name="title" value="{{ old('title') }}"
                         :required="type === 'live_class'"
                         placeholder="Misal: Strategi Lolos SNBT 2025..."
                         class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-[#0A52C4] focus:ring-1 focus:ring-[#0A52C4] outline-none">
@@ -155,14 +156,15 @@
                     <label class="block text-sm font-bold text-gray-700 mb-1">Deskripsi Kelas</label>
                     <textarea name="description" rows="2"
                         placeholder="Tulis ringkasan materi yang akan dibahas..."
-                        class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-[#0A52C4] focus:ring-1 focus:ring-[#0A52C4] outline-none resize-none"></textarea>
+                        class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-[#0A52C4] focus:ring-1 focus:ring-[#0A52C4] outline-none resize-none">{{ old('description') }}</textarea>
                 </div>
-                <div class="grid grid-cols-3 gap-3">
+                <div class="grid grid-cols-2 gap-3">
                     <div class="col-span-1">
                         <label class="block text-sm font-bold text-gray-700 mb-1">
                             Tanggal <span class="text-red-500">*</span>
                         </label>
                         <input type="date" name="live_date"
+                            min="{{ now()->toDateString() }}" value="{{ old('live_date') }}"
                             :required="type === 'live_class'"
                             class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#0A52C4] focus:ring-1 focus:ring-[#0A52C4] outline-none">
                     </div>
@@ -170,7 +172,7 @@
                         <label class="block text-sm font-bold text-gray-700 mb-1">
                             Pukul <span class="text-red-500">*</span>
                         </label>
-                        <input type="time" name="live_time"
+                        <input type="time" name="live_time" value="{{ old('live_time') }}"
                             :required="type === 'live_class'"
                             class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#0A52C4] focus:ring-1 focus:ring-[#0A52C4] outline-none">
                     </div>
@@ -183,7 +185,7 @@
                     Tautan Meeting (GMeet / Zoom / Jitsi) <span class="text-red-500">*</span>
                 </label>
                 {{-- Pakai type="text" bukan "url" supaya browser tidak blokir format link pendek --}}
-                <input type="text" name="meeting_link"
+                <input type="text" name="meeting_link" value="{{ old('meeting_link') }}"
                     placeholder="https://meet.google.com/abc-def-ghi"
                     required
                     class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-[#0A52C4] focus:ring-1 focus:ring-[#0A52C4] outline-none">

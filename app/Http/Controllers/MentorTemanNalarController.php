@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RejectionReasonRequest;
 use App\Models\LiveClass;
 use App\Models\MentoringBooking;
 use App\Models\MentorSlot;
@@ -20,7 +21,7 @@ class MentorTemanNalarController extends Controller
     {
         $mentorId = Auth::id();
 
-        $this->expirePastSessions($mentorId);
+        MentorSlot::expirePastSessions($mentorId);
 
         $slots = MentorSlot::where('mentor_id', $mentorId)
             ->with(['booking.student'])
@@ -126,6 +127,10 @@ class MentorTemanNalarController extends Controller
         } else {
             $schedule_time = Carbon::parse($request->live_date.' '.$request->live_time);
 
+            if ($schedule_time->isPast()) {
+                return redirect()->back()->withErrors(['live_date' => 'Belajar Bersama harus dijadwalkan untuk waktu yang akan datang.'])->withInput();
+            }
+
             LiveClass::create([
                 'mentor_id' => Auth::id(),
                 'title' => $request->title,
@@ -198,13 +203,16 @@ class MentorTemanNalarController extends Controller
         return redirect()->back()->with('success', 'Booking berhasil disetujui!');
     }
 
-    public function rejectBooking($id): RedirectResponse
+    public function rejectBooking(RejectionReasonRequest $request, $id): RedirectResponse
     {
         $booking = MentoringBooking::where('mentor_id', Auth::id())
             ->where('status', 'pending')
             ->with('slot')
             ->findOrFail($id);
-        $booking->update(['status' => 'rejected']);
+        $booking->update([
+            'status' => 'rejected',
+            'rejection_reason' => $request->validated('reason'),
+        ]);
 
         $student = $booking->student()->with('studentProfile')->first();
         $mentor = $booking->mentor()->with('mentorProfile')->first();
@@ -269,19 +277,5 @@ class MentorTemanNalarController extends Controller
         $slot->delete();
 
         return redirect()->back()->with('success', 'Slot berhasil dihapus.');
-    }
-
-    private function expirePastSessions(int $mentorId): void
-    {
-        $slots = MentorSlot::where('mentor_id', $mentorId)
-            ->whereIn('status', ['kosong', 'terisi'])
-            ->get();
-
-        foreach ($slots as $slot) {
-            if (Carbon::parse($slot->date.' '.$slot->end_time)->isPast()) {
-                $slot->update(['status' => 'expired']);
-                $slot->bookings()->whereIn('status', ['pending', 'approved'])->update(['status' => 'expired']);
-            }
-        }
     }
 }

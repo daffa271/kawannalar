@@ -1,5 +1,5 @@
 <x-layouts.admin title="Moderasi Paket Soal — Admin Hub">
-<div class="mx-auto max-w-7xl space-y-6 px-1 sm:px-0" x-data="{ rejectModal: false, targetQuizId: null, targetQuizTitle: '' }">
+<div class="mx-auto max-w-7xl space-y-6 px-1 sm:px-0" x-data="{ rejectModal: false, unapprove: false, targetQuizId: null, targetQuizTitle: '' }">
     <div>
         <p class="text-xs font-semibold uppercase tracking-wider text-[#0A52C4]">Admin Moderation Hub</p>
         <h1 class="mt-1 text-2xl font-extrabold text-gray-900 sm:text-3xl">Moderasi Paket Soal Uji Nalar</h1>
@@ -57,7 +57,7 @@
                             </button>
                         </form>
 
-                        <button @click="targetQuizId = {{ $quiz->id }}; targetQuizTitle = '{{ addslashes($quiz->title) }}'; rejectModal = true;"
+                        <button @click="unapprove = false; targetQuizId = {{ $quiz->id }}; targetQuizTitle = '{{ addslashes($quiz->title) }}'; rejectModal = true;"
                                 type="button"
                                 class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100 transition">
                             ✕ Tolak
@@ -107,7 +107,15 @@
                         {{ $quiz->subject->name ?? '-' }} · Kelas {{ $quiz->class_level }} · Mentor: {{ $quiz->mentor->name ?? '-' }}
                     </p>
                 </div>
-                <span class="rounded-full bg-green-100 px-2.5 py-0.5 text-[10px] font-bold text-green-700">Aktif Tayang</span>
+                <div class="flex shrink-0 items-center gap-2">
+                    <span class="rounded-full bg-green-100 px-2.5 py-0.5 text-[10px] font-bold text-green-700">Aktif Tayang</span>
+                    {{-- Memakai modal & route tolak yang sama (admin.quizzes.reject) --}}
+                    <button type="button"
+                            @click="unapprove = true; targetQuizId = {{ $quiz->id }}; targetQuizTitle = @js($quiz->title); rejectModal = true;"
+                            class="rounded-xl border border-red-200 bg-white px-3 py-1.5 text-[10px] font-bold text-red-600 transition hover:bg-red-50">
+                        Batalkan Persetujuan
+                    </button>
+                </div>
             </div>
             @endforeach
         </div>
@@ -117,8 +125,11 @@
     {{-- Modal Tolak --}}
     <div x-show="rejectModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-[#0F1F3D]/50 p-4">
         <div @click.outside="rejectModal = false" class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <h3 class="font-extrabold text-gray-900 text-base">Tolak Paket Soal</h3>
+            <h3 class="font-extrabold text-gray-900 text-base" x-text="unapprove ? 'Batalkan Persetujuan' : 'Tolak Paket Soal'">Tolak Paket Soal</h3>
             <p class="text-xs text-gray-500 mt-1" x-text="targetQuizTitle"></p>
+            <p x-show="unapprove" x-cloak class="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-800">
+                Paket ini akan berstatus Ditolak dan ditarik dari Bank Soal, Flashcard, dan Nalar Kilat. Soal dan riwayat pengerjaan siswa tidak dihapus.
+            </p>
 
             <form :action="`/admin/quizzes/${targetQuizId}/reject`" method="POST" class="mt-4 space-y-4">
                 @csrf
@@ -130,7 +141,7 @@
                 </div>
                 <div class="flex justify-end gap-2">
                     <button type="button" @click="rejectModal = false" class="rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-gray-600">Batal</button>
-                    <button type="submit" class="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700">Tolak Paket Soal</button>
+                    <button type="submit" class="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700" x-text="unapprove ? 'Ya, Batalkan Persetujuan' : 'Tolak Paket Soal'">Tolak Paket Soal</button>
                 </div>
             </form>
         </div>

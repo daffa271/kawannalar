@@ -27,10 +27,17 @@ class DashboardController extends Controller
         $moduleTayang = $myModules->where('status', 'approved')->count();
 
         // ── Real slot data (dashboard table) ────────────────────────────
+        // Sama seperti halaman Sesi Mentoring: slot yang sudah lewat ditandai expired dulu.
+        MentorSlot::expirePastSessions($mentor->id);
+
+        // Slot aktif (kosong/terisi) terdekat di atas, lalu riwayat terbaru.
         $mySlots = MentorSlot::where('mentor_id', $mentor->id)
             ->with(['booking.student'])
-            ->orderBy('date')
-            ->orderBy('start_time')
+            ->orderByRaw("CASE WHEN status IN ('kosong', 'terisi') THEN 0 ELSE 1 END")
+            ->orderByRaw("CASE WHEN status IN ('kosong', 'terisi') THEN date END")
+            ->orderByRaw("CASE WHEN status IN ('kosong', 'terisi') THEN start_time END")
+            ->orderByDesc('date')
+            ->orderByDesc('start_time')
             ->get();
 
         // ── Pending booking requests (sidebar widget) ────────────────────

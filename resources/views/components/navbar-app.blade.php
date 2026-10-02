@@ -3,7 +3,10 @@ $user = auth()->user();
 $name = $user?->name ?? 'Pengguna';
 $initials = collect(explode(' ', trim($name)))->filter()->take(2)->map(fn ($part) => strtoupper(substr($part, 0, 1)))->join('');
 $role = $user?->role ?? 'siswa';
-$studentXp = $user?->xp ?? $user?->studentProfile?->xp ?? 1250;
+$studentXp = (int) ($user?->xp_points ?? 0);
+// Notifikasi database milik user yang login (relasi Notifiable sudah urut terbaru).
+$notifications = $user ? $user->notifications()->limit(5)->get() : collect();
+$unreadCount = $user ? $user->unreadNotifications()->count() : 0;
 $studentGrade = $user?->studentProfile?->grade ?? '';
 $mentorUniversity = $user?->mentorProfile?->university ?? 'Mentor';
 $profileSubtitle = match ($role) {
@@ -62,19 +65,32 @@ $roleBadge = match ($role) {
             @endif
 
             <div class="relative">
-                <button @click="notifOpen = !notifOpen" class="relative flex min-h-[40px] min-w-[40px] items-center justify-center rounded-full p-2.5 text-slate-600 transition hover:bg-slate-100" aria-label="Notifikasi">
+                <button @click="notifOpen = !notifOpen" class="relative flex min-h-[40px] min-w-[40px] items-center justify-center rounded-full p-2.5 text-slate-600 transition hover:bg-slate-100" aria-label="Notifikasi{{ $unreadCount > 0 ? ' ('.$unreadCount.' belum dibaca)' : '' }}">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 0 0-4-5.7V5a2 2 0 1 0-4 0v.3C7.7 6.2 6 8.4 6 11v3.2c0 .5-.2 1.1-.6 1.4L4 17h5m6 0v1a3 3 0 1 1-6 0v-1m6 0H9" />
                     </svg>
-                    <span class="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-rose-500 px-1 text-[10px] font-bold text-white">3</span>
+                    @if ($unreadCount > 0)
+                    <span class="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-rose-500 px-1 text-[10px] font-bold text-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
+                    @endif
                 </button>
 
                 <div x-show="notifOpen" x-cloak @click.away="notifOpen = false" class="absolute right-0 mt-2 w-72 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl">
-                    <div class="border-b border-slate-100 px-4 py-3 text-sm font-bold text-slate-800">Notifikasi <span class="float-right text-xs text-[#0A52C4]">3 baru</span></div>
-                    <div class="divide-y divide-slate-100">
-                        <p class="px-4 py-3 text-xs text-slate-600">Mentor baru di Ruang Nalar</p>
-                        <p class="px-4 py-3 text-xs text-slate-600">Tryout UTBK tersedia!</p>
-                        <p class="px-4 py-3 text-xs text-slate-600">+50 XP dari quiz hari ini</p>
+                    <div class="border-b border-slate-100 px-4 py-3 text-sm font-bold text-slate-800">
+                        Notifikasi
+                        @if ($unreadCount > 0)
+                        <span class="float-right text-xs text-[#0A52C4]">{{ $unreadCount }} baru</span>
+                        @endif
+                    </div>
+                    <div class="max-h-80 divide-y divide-slate-100 overflow-y-auto">
+                        @forelse ($notifications as $notification)
+                        <div class="px-4 py-3 {{ $notification->read_at ? '' : 'bg-blue-50/60' }}">
+                            <p class="text-xs font-bold text-slate-800">{{ $notification->data['title'] ?? 'Notifikasi' }}</p>
+                            <p class="mt-0.5 text-xs leading-5 text-slate-600">{{ $notification->data['body'] ?? '' }}</p>
+                            <p class="mt-1 text-[10px] text-slate-400">{{ $notification->created_at?->translatedFormat('d M Y, H:i') }} WIB</p>
+                        </div>
+                        @empty
+                        <p class="px-4 py-6 text-center text-xs text-slate-500">Belum ada notifikasi.</p>
+                        @endforelse
                     </div>
                 </div>
             </div>

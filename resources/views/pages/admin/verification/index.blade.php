@@ -8,6 +8,7 @@
             </div><span class="inline-flex w-fit items-center rounded-full bg-[#FFC000]/15 px-3 py-1.5 text-xs font-bold text-[#8A6500]">{{ $pendingMentorCount }} antrean pending</span>
         </div>
         @if (session('status'))<div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">{{ session('status') }}</div>@endif
+        <x-moderation-modal />
         <section class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
             <div class="flex flex-col gap-2 border-b border-gray-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                 <div>
@@ -49,8 +50,8 @@
                             <td class="whitespace-nowrap px-5 py-4 text-gray-600">{{ $mentor->created_at?->format('d M Y') }}</td>
                             <td class="px-5 py-4">
                                 <div class="flex justify-end gap-2">
-                                    <form method="POST" action="{{ route('admin.mentors.approve', $mentor->id) }}">@csrf @method('PATCH')<button type="submit" class="rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white hover:bg-green-700">Setujui</button></form>
-                                    <form method="POST" action="{{ route('admin.mentors.reject', $mentor->id) }}">@csrf @method('PATCH')<button type="submit" class="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50">Tolak</button></form>
+                                    <x-moderation-button :action="route('admin.mentors.approve', $mentor->id)" title="Setujui pendaftaran mentor?" :subject="$mentor->name" note="Mentor akan langsung bisa login dan mengelola sesi bimbingan." class="rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white hover:bg-green-700">Setujui</x-moderation-button>
+                                    <x-moderation-button mode="reject" :action="route('admin.mentors.reject', $mentor->id)" title="Tolak pendaftaran mentor?" :subject="$mentor->name" audience="calon mentor saat mencoba login" class="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50">Tolak</x-moderation-button>
                                 </div>
                             </td>
                         </tr>@endforeach</tbody>
@@ -67,10 +68,20 @@
                         </div><span class="text-xs text-gray-500">{{ $mentor->created_at?->format('d M Y') }}</span>
                     </div>
                     <p class="mt-3 text-sm font-semibold text-gray-700">{{ $profile?->university ?? '-' }}</p>
-                    <p class="text-xs text-gray-500">{{ $profile?->major ?? '-' }} · {{ $profile?->high_school ?? '-' }}</p>
-                    <div class="mt-4 flex gap-2">
-                        <form method="POST" action="{{ route('admin.mentors.approve', $mentor->id) }}" class="flex-1">@csrf @method('PATCH')<button type="submit" class="w-full rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white">Setujui</button></form>
-                        <form method="POST" action="{{ route('admin.mentors.reject', $mentor->id) }}" class="flex-1">@csrf @method('PATCH')<button type="submit" class="w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600">Tolak</button></form>
+                    <p class="text-xs text-gray-500">{{ $profile?->major ?? '-' }} · {{ $profile?->high_school ?? '-' }} · Lulus {{ $profile?->graduation_year ?? '-' }}</p>
+                    <div class="mt-3 grid grid-cols-2 gap-2">
+                        @if ($profile?->ktm_path)
+                        <a href="{{ route('admin.mentors.ktm', $mentor->id) }}" target="_blank" rel="noopener" class="rounded-lg border border-[#0A52C4]/30 bg-white px-3 py-2 text-center text-xs font-bold text-[#0A52C4]">🪪 Lihat KTM</a>
+                        @else
+                        <span class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-center text-xs font-semibold text-gray-400">KTM tidak ada</span>
+                        @endif
+                        @if ($profile?->whatsapp)
+                        <a href="https://wa.me/{{ preg_replace('/\D+/', '', $profile->whatsapp) }}" target="_blank" rel="noopener" class="truncate rounded-lg border border-green-200 bg-white px-3 py-2 text-center text-xs font-bold text-green-700">WhatsApp {{ $profile->whatsapp }}</a>
+                        @endif
+                    </div>
+                    <div class="mt-2 flex gap-2">
+                        <x-moderation-button :action="route('admin.mentors.approve', $mentor->id)" title="Setujui pendaftaran mentor?" :subject="$mentor->name" note="Mentor akan langsung bisa login dan mengelola sesi bimbingan." class="flex-1 rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white">Setujui</x-moderation-button>
+                        <x-moderation-button mode="reject" :action="route('admin.mentors.reject', $mentor->id)" title="Tolak pendaftaran mentor?" :subject="$mentor->name" audience="calon mentor saat mencoba login" class="flex-1 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600">Tolak</x-moderation-button>
                     </div>
                 </article>
                 @endforeach
@@ -126,14 +137,8 @@
                             <td class="whitespace-nowrap px-5 py-4 text-gray-600">{{ $module->created_at?->format('d M Y') }}</td>
                             <td class="px-5 py-4">
                                 <div class="flex justify-end gap-2">
-                                    <form method="POST" action="{{ route('admin.modules.approve', $module->id) }}">
-                                        @csrf @method('PATCH')
-                                        <button type="submit" class="rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white hover:bg-green-700">Setujui</button>
-                                    </form>
-                                    <form method="POST" action="{{ route('admin.modules.reject', $module->id) }}">
-                                        @csrf @method('PATCH')
-                                        <button type="submit" class="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50">Tolak</button>
-                                    </form>
+                                    <x-moderation-button :action="route('admin.modules.approve', $module->id)" title="Setujui modul ini?" :subject="$module->title" note="Modul akan tayang di Ruang Nalar dan bisa diunduh siswa." class="rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white hover:bg-green-700">Setujui</x-moderation-button>
+                                    <x-moderation-button mode="reject" :action="route('admin.modules.reject', $module->id)" title="Tolak modul ini?" :subject="$module->title" audience="pengunggah di halaman Ruang Nalar" class="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50">Tolak</x-moderation-button>
                                 </div>
                             </td>
                         </tr>
@@ -153,8 +158,8 @@
                     <p class="mt-3 text-sm text-gray-600">{{ Str::limit($module->description ?: 'Tidak ada deskripsi', 120) }}</p>
                     <p class="mt-2 text-xs text-gray-500">Pengunggah: {{ $module->uploader?->name ?? 'Unknown' }} ({{ $module->uploader?->role ?? 'user' }})</p>
                     <div class="mt-4 flex items-center gap-2"><a href="{{ route('admin.modules.file', $module) }}" target="_blank" rel="noopener" class="flex-1 rounded-lg border border-[#0A52C4]/20 bg-white px-3 py-2 text-center text-xs font-bold text-[#0A52C4]">Lihat File</a>
-                        <form method="POST" action="{{ route('admin.modules.approve', $module->id) }}" class="flex-1">@csrf @method('PATCH')<button type="submit" class="w-full rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white">Setujui</button></form>
-                        <form method="POST" action="{{ route('admin.modules.reject', $module->id) }}" class="flex-1">@csrf @method('PATCH')<button type="submit" class="w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600">Tolak</button></form>
+                        <x-moderation-button :action="route('admin.modules.approve', $module->id)" title="Setujui modul ini?" :subject="$module->title" note="Modul akan tayang di Ruang Nalar dan bisa diunduh siswa." class="flex-1 rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white">Setujui</x-moderation-button>
+                        <x-moderation-button mode="reject" :action="route('admin.modules.reject', $module->id)" title="Tolak modul ini?" :subject="$module->title" audience="pengunggah di halaman Ruang Nalar" class="flex-1 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600">Tolak</x-moderation-button>
                     </div>
                 </article>
                 @endforeach

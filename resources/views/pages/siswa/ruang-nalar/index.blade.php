@@ -317,8 +317,8 @@
                         <p class="font-bold flex items-center gap-1 text-red-800">
                             📌 Catatan Revisi Admin:
                         </p>
-                        <p class="leading-relaxed">
-                            Gambar atau modul terlalu buram / format tidak lengkap. Harap lakukan upload ulang catatan dengan foto atau file PDF yang lebih jernih dan terbaca.
+                        <p class="leading-relaxed break-words">
+                            {{ $myMod->rejection_reason ?: 'Admin tidak mencantumkan alasan penolakan.' }}
                         </p>
                     </div>
                     @endif

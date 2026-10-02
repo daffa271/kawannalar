@@ -4,16 +4,25 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class TelegramService
 {
-    protected string $botToken;
-    protected string $chatId;
+    protected ?string $botToken;
+    protected ?string $chatId;
 
     public function __construct()
     {
-        $this->botToken = config('services.telegram.bot_token', '');
-        $this->chatId   = config('services.telegram.chat_id', '');
+        $this->botToken = $this->normalize(config('services.telegram.bot_token'));
+        $this->chatId   = $this->normalize(config('services.telegram.chat_id'));
+    }
+
+    /**
+     * Apakah bot token tersedia. Tanpa token, tidak ada request ke Telegram.
+     */
+    public function isConfigured(): bool
+    {
+        return $this->botToken !== null;
     }
 
     /**
@@ -25,16 +34,11 @@ class TelegramService
      *   - mentor_name : string
      *   - date        : string   (tanggal tampil, sudah diformat)
      *   - time        : string   (jam mulai, sudah diformat)
-     *   - link        : string   (meeting link, only for live_class)
+     *   - link        : string   (meeting link, hanya untuk live_class — link sesi private tidak pernah dikirim)
      * @return bool
      */
     public function sendMentoringNotification(array $sessionData): bool
     {
-        if (empty($this->botToken) || empty($this->chatId)) {
-            Log::warning('TelegramService: BOT_TOKEN atau CHAT_ID belum dikonfigurasi di .env');
-            return false;
-        }
-
         $isLiveClass = ($sessionData['type'] ?? '1on1') === 'live_class';
         $typeLabel = $isLiveClass
             ? '🎓 <b>BELAJAR BERSAMA BARU TERSEDIA!</b>'
@@ -67,33 +71,7 @@ class TelegramService
             $messageLines[] = '✨ Sesi tersedia untuk dibooking melalui KawanNalar.';
         }
 
-        $message = implode("\n", $messageLines);
-
-        $url = "https://api.telegram.org/bot{$this->botToken}/sendMessage";
-
-        try {
-            $response = Http::timeout(10)->post($url, [
-                'chat_id'    => $this->chatId,
-                'text'       => $message,
-                'parse_mode' => 'HTML',
-                'disable_web_page_preview' => true,
-            ]);
-
-            if (!$response->successful()) {
-                Log::error('TelegramService: Gagal mengirim notifikasi.', [
-                    'status'   => $response->status(),
-                    'response' => $response->body(),
-                ]);
-                return false;
-            }
-
-            return true;
-        } catch (\Exception $e) {
-            Log::error('TelegramService: Exception saat mengirim notifikasi.', [
-                'message' => $e->getMessage(),
-            ]);
-            return false;
-        }
+        return $this->sendGroupMessage(implode("\n", $messageLines));
     }
 
     public function sendBookingStatusNotification(array $bookingData): bool
@@ -116,25 +94,68 @@ class TelegramService
         ]));
     }
 
-    private function sendGroupMessage(string $message): bool
+    /**
+     * Kirim pesan ke chat tertentu. Mengembalikan false (tanpa exception) bila
+     * token/chat_id belum dikonfigurasi atau Telegram gagal dihubungi.
+     */
+    public function sendMessage(int|string|null $chatId, string $message): bool
     {
-        if (empty($this->botToken) || empty($this->chatId)) {
-            Log::warning('TelegramService: BOT_TOKEN atau CHAT_ID belum dikonfigurasi di .env');
+        $chatId = $this->normalize($chatId);
+
+        if ($this->botToken === null || $chatId === null) {
             return false;
         }
 
         try {
             $response = Http::timeout(10)->post("https://api.telegram.org/bot{$this->botToken}/sendMessage", [
-                'chat_id' => $this->chatId,
-                'text' => $message,
+                'chat_id'    => $chatId,
+                'text'       => $message,
                 'parse_mode' => 'HTML',
                 'disable_web_page_preview' => true,
             ]);
 
-            return $response->successful();
-        } catch (\Exception $e) {
-            Log::error('TelegramService: Exception saat mengirim status booking.', ['message' => $e->getMessage()]);
+            if (!$response->successful()) {
+                Log::error('TelegramService: Gagal mengirim pesan.', [
+                    'status'   => $response->status(),
+                    'response' => $this->redact($response->body()),
+                ]);
+
+                return false;
+            }
+
+            return true;
+        } catch (Throwable $e) {
+            Log::error('TelegramService: Exception saat mengirim pesan.', [
+                'message' => $this->redact($e->getMessage()),
+            ]);
+
             return false;
         }
+    }
+
+    private function sendGroupMessage(string $message): bool
+    {
+        if ($this->botToken === null || $this->chatId === null) {
+            Log::warning('TelegramService: TELEGRAM_BOT_TOKEN atau TELEGRAM_GROUP_CHAT_ID belum dikonfigurasi di .env');
+
+            return false;
+        }
+
+        return $this->sendMessage($this->chatId, $message);
+    }
+
+    private function normalize(mixed $value): ?string
+    {
+        $value = trim((string) $value);
+
+        return $value === '' ? null : $value;
+    }
+
+    /**
+     * Pesan exception HTTP dapat memuat URL lengkap (termasuk token) — jangan sampai tertulis ke log.
+     */
+    private function redact(string $text): string
+    {
+        return $this->botToken === null ? $text : str_replace($this->botToken, '[REDACTED]', $text);
     }
 }

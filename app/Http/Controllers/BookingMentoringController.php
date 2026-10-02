@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\MentoringBooking;
 use App\Models\MentorSlot;
+use App\Notifications\BookingRequestMailNotification;
 use App\Notifications\NewBookingNotification;
 use App\Services\TelegramNotificationService;
 use Carbon\Carbon;
@@ -65,6 +66,15 @@ class BookingMentoringController extends Controller
 
         // 1) Database Notification → Mentor
         $mentor->notify(new NewBookingNotification($studentName, $studentSchool, $request->topic, $schedule));
+
+        // 1b) Email → Mentor. Gagal kirim (mis. SMTP tidak tersedia) tidak boleh menggagalkan booking.
+        rescue(fn () => $mentor->notify(new BookingRequestMailNotification(
+            $studentName,
+            $studentSchool,
+            $booking->topic,
+            $schedule,
+            $booking->message,
+        )), report: true);
 
         // 2) Telegram Notification (requires TELEGRAM_BOT_TOKEN in .env and chat_ids stored in profiles)
         $mentorMsg  = "🔔 Ada Booking Baru dari <b>{$studentName}</b> ({$studentSchool})\n📚 Topik: {$booking->topic}\n📅 Jadwal: {$schedule}\nStatus: Menunggu konfirmasi mentor.";

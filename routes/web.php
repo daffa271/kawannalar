@@ -42,6 +42,8 @@ Route::middleware(['auth', 'role:siswa'])->group(function () {
 
     // Uji Nalar
     Route::get('/uji-nalar', [UjiNalarController::class, 'index'])->name('siswa.uji-nalar.index');
+    Route::get('/uji-nalar/kilat/{jumlah}', [UjiNalarController::class, 'kilat'])->whereIn('jumlah', [5, 10, 15])->name('siswa.uji-nalar.kilat');
+    Route::post('/uji-nalar/kilat', [UjiNalarController::class, 'submitKilat'])->name('siswa.uji-nalar.kilat.submit');
     Route::get('/uji-nalar/{quiz}', [UjiNalarController::class, 'show'])->name('siswa.uji-nalar.show');
     Route::post('/uji-nalar/{quiz}/submit', [UjiNalarController::class, 'submit'])->name('siswa.uji-nalar.submit');
 
@@ -57,15 +59,18 @@ Route::middleware(['auth', 'role:siswa'])->group(function () {
     ]))->name('siswa.nalar-diskusi');
     Route::get('/nalarbot', fn() => view('dashboard.maintenance', [
         'title' => 'NalarBot AI — Segera Hadir',
+        'description' => 'Asisten AI untuk tes minat bakat, membaca peluang masuk PTN, dan teman cerita seputar belajar. Sambil menunggu, kamu bisa konsultasi langsung dengan mentor di Teman Nalar.',
     ]))->name('siswa.nalarbot');
     Route::get('/jejak-nalar', fn() => view('dashboard.maintenance', [
         'title' => 'Jejak Nalar — Segera Hadir',
     ]))->name('siswa.jejak-nalar');
     Route::get('/kabar-nalar', fn() => view('dashboard.maintenance', [
         'title' => 'Kabar Nalar — Segera Hadir',
+        'description' => 'Info beasiswa, lomba, dan perguruan tinggi yang dibagikan mentor dan diverifikasi Admin sebelum tayang, lengkap dengan tenggat pendaftarannya.',
     ]))->name('siswa.kabar-nalar');
     Route::get('/nalar-focus', fn() => view('dashboard.maintenance', [
         'title' => 'Nalar Focus — Segera Hadir',
+        'description' => 'Riwayat dan statistik sesi fokusmu sedang disiapkan. Timer Pomodoro dan musik fokus sudah bisa dipakai di Dashboard.',
     ]))->name('siswa.nalar-focus');
 });
 Route::middleware(['auth', 'role:mentor'])->group(function () {

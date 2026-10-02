@@ -60,12 +60,16 @@ return [
     |--------------------------------------------------------------------------
     |
     | Here you may specify the default timezone for your application, which
-    | will be used by the PHP date and date-time functions. The timezone
-    | is set to "UTC" by default as it is suitable for most use cases.
+    | will be used by the PHP date and date-time functions.
+    |
+    | KawanNalar memakai WIB: jadwal Teman Nalar (mentor_slots.date/start_time/
+    | end_time, live_classes.schedule_time) disimpan sebagai jam dinding WIB
+    | yang diketik mentor, sehingga now()/isPast() harus dihitung dalam WIB.
+    | Timestamp framework (created_at, dst.) juga tersimpan dalam WIB.
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'Asia/Jakarta',
 
     /*
     |--------------------------------------------------------------------------

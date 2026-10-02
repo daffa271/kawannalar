@@ -9,6 +9,7 @@ use App\Notifications\ResetPasswordNotification;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -27,7 +28,8 @@ use Illuminate\Notifications\Notifiable;
     'school_name',
     'xp_points',
     'streak_days',
-    'is_suspended'
+    'is_suspended',
+    'rejection_reason',
 ])]
 #[Hidden([
     'password',
@@ -95,5 +97,47 @@ class User extends Authenticatable
     public function quizzes(): HasMany
     {
         return $this->hasMany(Quiz::class, 'mentor_id');
+    }
+
+    /**
+     * Domain email akun seed/testing — tidak boleh masuk leaderboard.
+     */
+    public const DUMMY_EMAIL_DOMAIN = '@kawannalar.test';
+
+    /**
+     * Siswa yang berhak tampil di leaderboard (tanpa akun dummy).
+     */
+    public function scopeLeaderboardEligible(Builder $query): Builder
+    {
+        return $query->where('role', 'siswa')
+            ->where('email', 'not like', '%'.self::DUMMY_EMAIL_DOMAIN);
+    }
+
+    /**
+     * Urutan leaderboard: XP terbanyak, lalu yang lebih dulu terdaftar.
+     */
+    public function scopeLeaderboard(Builder $query): Builder
+    {
+        return $query->leaderboardEligible()
+            ->orderByDesc('xp_points')
+            ->orderBy('id');
+    }
+
+    /**
+     * Peringkat global siswa ini dengan urutan yang sama seperti scopeLeaderboard.
+     */
+    public function leaderboardRank(): ?int
+    {
+        if ($this->role !== 'siswa' || str_ends_with((string) $this->email, self::DUMMY_EMAIL_DOMAIN)) {
+            return null;
+        }
+
+        return static::query()
+            ->leaderboardEligible()
+            ->where(function (Builder $query) {
+                $query->where('xp_points', '>', $this->xp_points)
+                    ->orWhere(fn (Builder $tie) => $tie->where('xp_points', $this->xp_points)->where('id', '<', $this->id));
+            })
+            ->count() + 1;
     }
 }

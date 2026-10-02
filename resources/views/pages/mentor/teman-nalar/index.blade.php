@@ -1,7 +1,8 @@
 <x-layouts.mentor>
     <x-slot name="title">Kelola Sesi Mentoring — KawanNalar</x-slot>
 
-    <div x-data="{ tab: '1on1', showModal: false }" class="space-y-8 pb-24">
+    {{-- Modal langsung terbuka bila penyimpanan sesi ditolak, agar pesan error terlihat --}}
+    <div x-data="{ tab: '1on1', showModal: {{ $errors->any() ? 'true' : 'false' }} }" class="space-y-8 pb-24">
         @if(auth()->user()->is_suspended)
         <div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700 flex items-center gap-3">
             <span class="text-xl">⚠️</span>
@@ -42,6 +43,8 @@
             ❌ {{ session('error') }}
         </div>
         @endif
+
+        <x-moderation-modal />
 
         @include('pages.mentor.teman-nalar.partials.header-stats')
         @include('pages.mentor.teman-nalar.partials.tab-navigation')

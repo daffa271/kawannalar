@@ -1,3 +1,10 @@
+@php
+    // Dipakai paket soal (Bank Soal) dan Nalar Kilat; paket soal memakai data $quiz.
+    $pageTitle = $pageTitle ?? $quiz->title;
+    $pageMeta = $pageMeta ?? (($quiz->subject->name ?? '').' · Kelas '.$quiz->class_level);
+    $retryUrl = $retryUrl ?? route('siswa.uji-nalar.show', $quiz);
+    $retryLabel = $retryLabel ?? '🔄 Ulangi Quiz';
+@endphp
 <x-layouts.siswa title="Hasil Quiz — Uji Nalar KawanNalar">
 <div class="mx-auto max-w-3xl px-1 sm:px-0 space-y-6">
 
@@ -5,8 +12,8 @@
     <div class="rounded-2xl overflow-hidden shadow-lg">
         <div class="bg-gradient-to-br from-[#0A52C4] to-[#1E40AF] p-6 text-white text-center">
             <p class="text-xs font-bold uppercase tracking-widest text-blue-200 mb-2">Hasil Quiz</p>
-            <h1 class="text-2xl font-extrabold sm:text-3xl mb-1">{{ $quiz->title }}</h1>
-            <p class="text-blue-100 text-sm">{{ $quiz->subject->name ?? '' }} · Kelas {{ $quiz->class_level }}</p>
+            <h1 class="text-2xl font-extrabold sm:text-3xl mb-1">{{ $pageTitle }}</h1>
+            <p class="text-blue-100 text-sm">{{ $pageMeta }}</p>
         </div>
         <div class="bg-white p-6">
             <div class="grid grid-cols-3 gap-4 text-center">
@@ -80,9 +87,9 @@
 
     {{-- Actions --}}
     <div class="flex flex-wrap gap-3">
-        <a href="{{ route('siswa.uji-nalar.show', $quiz) }}"
+        <a href="{{ $retryUrl }}"
            class="flex-1 rounded-xl bg-[#0A52C4] py-3 text-center text-sm font-bold text-white hover:bg-[#0842A0] transition">
-            🔄 Ulangi Quiz
+            {{ $retryLabel }}
         </a>
         <a href="{{ route('siswa.uji-nalar.index') }}"
            class="flex-1 rounded-xl border border-gray-200 py-3 text-center text-sm font-bold text-gray-700 hover:bg-gray-50 transition">

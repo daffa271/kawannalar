@@ -4,7 +4,7 @@
     $profile   = $mentor->mentorProfile;
 @endphp
 
-<div x-data="{ activeTab: 'slot', showModal: false }" class="mx-auto max-w-7xl space-y-6 px-1 sm:px-0">
+<div x-data="{ activeTab: 'slot', showModal: {{ $errors->any() ? 'true' : 'false' }} }" class="mx-auto max-w-7xl space-y-6 px-1 sm:px-0">
 
     @if(auth()->user()->is_suspended)
     <div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700 flex items-center gap-3">
@@ -12,6 +12,8 @@
         <span>Akun Anda sedang ditangguhkan oleh Admin. Silakan hubungi dukungan KawanNalar.</span>
     </div>
     @endif
+
+    <x-moderation-modal />
 
     {{-- ── HERO WELCOME BANNER ───────────────────────────────────────── --}}
     <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0A52C4] via-[#1565D8] to-[#0D3E96] p-6 text-white shadow-lg sm:p-8">
@@ -94,26 +96,30 @@
 
     {{-- ── TAB SELECTOR INTERAKTIF ──────────────────────────────────── --}}
     <div class="border-b border-gray-200">
-        <nav class="-mb-px flex space-x-6 overflow-x-auto">
+        {{-- HP: 3 kolom sama lebar dengan label pendek; sm ke atas: label penuh --}}
+        <nav class="-mb-px grid grid-cols-3 sm:flex sm:space-x-6">
             <button @click="activeTab = 'slot'"
                     :class="activeTab === 'slot' ? 'border-[#0A52C4] text-[#0A52C4] font-extrabold' : 'border-transparent text-gray-500 hover:text-gray-700 font-medium'"
-                    class="whitespace-nowrap border-b-2 py-3 px-1 text-sm transition">
-                📅 Kelola Slot 1-on-1
+                    class="border-b-2 py-3 px-1 text-center text-xs sm:whitespace-nowrap sm:text-sm transition">
+                <span class="sm:hidden">📅 Slot 1-on-1</span>
+                <span class="hidden sm:inline">📅 Kelola Slot 1-on-1</span>
             </button>
 
             <button @click="activeTab = 'soal'"
                     :class="activeTab === 'soal' ? 'border-[#0A52C4] text-[#0A52C4] font-extrabold' : 'border-transparent text-gray-500 hover:text-gray-700 font-medium'"
-                    class="whitespace-nowrap border-b-2 py-3 px-1 text-sm transition">
-                ⚡ Buat Paket Soal (Uji Nalar)
+                    class="border-b-2 py-3 px-1 text-center text-xs sm:whitespace-nowrap sm:text-sm transition">
+                <span class="sm:hidden">⚡ Paket Soal</span>
+                <span class="hidden sm:inline">⚡ Buat Paket Soal (Uji Nalar)</span>
                 @if($pendingCount > 0)
-                <span class="ml-1.5 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">{{ $pendingCount }} Pending</span>
+                <span class="ml-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">{{ $pendingCount }}<span class="hidden sm:inline"> Pending</span></span>
                 @endif
             </button>
 
             <button @click="activeTab = 'modul'"
                     :class="activeTab === 'modul' ? 'border-[#0A52C4] text-[#0A52C4] font-extrabold' : 'border-transparent text-gray-500 hover:text-gray-700 font-medium'"
-                    class="whitespace-nowrap border-b-2 py-3 px-1 text-sm transition">
-                📚 Upload Modul
+                    class="border-b-2 py-3 px-1 text-center text-xs sm:whitespace-nowrap sm:text-sm transition">
+                <span class="sm:hidden">📚 Modul</span>
+                <span class="hidden sm:inline">📚 Upload Modul</span>
             </button>
         </nav>
     </div>
@@ -121,98 +127,14 @@
     {{-- ── TAB CONTENT 1: KELOLA SLOT 1-ON-1 (real data) ───────────── --}}
     <div x-show="activeTab === 'slot'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {{-- Tabel Slot Mentoring (2 Kolom) --}}
+        {{-- Tabel Slot Mentoring (2 Kolom) — partial yang sama dengan halaman Sesi Mentoring --}}
         <div class="space-y-5 lg:col-span-2">
-            <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h2 class="font-extrabold text-gray-900 text-base">Tabel Slot Mentoring 1-on-1</h2>
-                        <p class="text-xs text-gray-400 mt-0.5">Jadwal waktu luang yang bisa dipesan oleh siswa</p>
-                    </div>
-                    @if(auth()->user()->is_suspended)
-                        <button disabled type="button"
-                                class="inline-flex items-center gap-1.5 rounded-xl bg-gray-200 px-3.5 py-2 text-xs font-bold text-gray-400 cursor-not-allowed">
-                            + Tambah Slot
-                        </button>
-                    @else
-                        <button @click="showModal = true" type="button"
-                                class="inline-flex items-center gap-1.5 rounded-xl bg-[#F28C28] px-3.5 py-2 text-xs font-bold text-white hover:bg-[#E07D1C] transition">
-                            + Tambah Slot
-                        </button>
-                    @endif
-                </div>
-
-                {{-- Table --}}
-                <div class="overflow-x-auto w-full">
-                    <table class="w-full text-left text-xs whitespace-nowrap">
-                        <thead>
-                            <tr class="border-b border-gray-100 bg-[#F8FAFC] text-gray-500 font-bold uppercase tracking-wider text-[10px]">
-                                <th class="py-3 px-3.5 rounded-l-xl">Hari &amp; Tanggal</th>
-                                <th class="py-3 px-3.5">Jam</th>
-                                <th class="py-3 px-3.5">Durasi</th>
-                                <th class="py-3 px-3.5">Status</th>
-                                <th class="py-3 px-3.5 rounded-r-xl text-right">Aksi / Meet</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50">
-                            @forelse($mySlots as $slot)
-                            @php
-                                $hasBooking = $slot->booking && $slot->booking->student;
-                            @endphp
-                            <tr class="hover:bg-gray-50 transition">
-                                <td class="py-3.5 px-3.5 font-bold text-gray-800">
-                                    {{ \Carbon\Carbon::parse($slot->date)->translatedFormat('l, d M Y') }}
-                                </td>
-                                <td class="py-3.5 px-3.5 text-gray-600 font-semibold">
-                                    {{ substr($slot->start_time, 0, 5) }} - {{ substr($slot->end_time, 0, 5) }} WIB
-                                </td>
-                                <td class="py-3.5 px-3.5 text-gray-500">{{ $slot->duration ?? '45' }} Menit</td>
-                                <td class="py-3.5 px-3.5">
-                                    @if($slot->status === 'terisi' && $hasBooking)
-                                        <div class="flex flex-col gap-0.5">
-                                            <span class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-[10px] font-extrabold text-[#0A52C4]">
-                                                <span class="h-1.5 w-1.5 rounded-full bg-[#0A52C4]"></span> Terisi
-                                            </span>
-                                            <p class="text-[11px] font-semibold text-gray-700">
-                                                {{ $slot->booking->student->name }}
-                                            </p>
-                                        </div>
-                                    @else
-                                        <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-[10px] font-bold text-green-700">
-                                            <span class="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span> Kosong (Tersedia)
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="py-3.5 px-3.5 text-right">
-                                    @if($slot->status === 'terisi' && $slot->meeting_link)
-                                        <a href="{{ $slot->meeting_link }}" target="_blank"
-                                           class="inline-flex items-center gap-1.5 rounded-xl border border-[#0A52C4] px-3 py-1.5 text-xs font-bold text-[#0A52C4] hover:bg-[#EEF4FF] transition">
-                                            🎥 Link Meet
-                                        </a>
-                                    @else
-                                        @if(auth()->user()->is_suspended)
-                                            <span class="text-xs font-semibold text-gray-300 cursor-not-allowed">Hapus Slot</span>
-                                        @else
-                                            <form action="{{ route('mentor.teman-nalar.slot.destroy', $slot->id) }}" method="POST" class="inline">
-                                                @csrf @method('DELETE')
-                                                <button type="submit" class="text-xs font-semibold text-red-500 hover:underline"
-                                                        onclick="return confirm('Hapus slot ini?')">Hapus Slot</button>
-                                            </form>
-                                        @endif
-                                    @endif
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="py-10 text-center text-sm text-gray-400">
-                                    Belum ada slot waktu luang. Klik <strong>+ Tambah Slot</strong> untuk memulai.
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+            @include('pages.mentor.teman-nalar.partials.slot-table', [
+                'slots' => $mySlots,
+                'title' => 'Tabel Slot Mentoring 1-on-1',
+                'subtitle' => 'Jadwal waktu luang yang bisa dipesan oleh siswa',
+                'showAddButton' => true,
+            ])
         </div>
 
         {{-- Sidebar Kanan: Sesi Terdekat & Permintaan Baru --}}
@@ -290,18 +212,10 @@
                             <button disabled class="flex-1 rounded-lg bg-gray-200 py-1.5 text-center font-bold text-gray-400 text-[11px] cursor-not-allowed">Setujui</button>
                             <button disabled class="flex-1 rounded-lg border border-gray-100 py-1.5 text-center font-bold text-gray-400 text-[11px] cursor-not-allowed">Tolak</button>
                         @else
-                            <form action="{{ route('mentor.teman-nalar.booking.approve', $booking->id) }}" method="POST" class="flex-1">
-                                @csrf @method('PATCH')
-                                <button type="submit" class="w-full rounded-lg bg-green-600 py-1.5 font-bold text-white text-[11px] hover:bg-green-700">
-                                    ✅ Setujui
-                                </button>
-                            </form>
-                            <form action="{{ route('mentor.teman-nalar.booking.reject', $booking->id) }}" method="POST" class="flex-1">
-                                @csrf @method('PATCH')
-                                <button type="submit" class="w-full rounded-lg border border-red-200 py-1.5 font-bold text-red-600 text-[11px] hover:bg-red-50">
-                                    ❌ Tolak
-                                </button>
-                            </form>
+                            @include('pages.mentor.teman-nalar.partials.booking-moderation-buttons', [
+                                'approveClass' => 'flex-1 rounded-lg bg-green-600 py-1.5 font-bold text-white text-[11px] hover:bg-green-700',
+                                'rejectClass' => 'flex-1 rounded-lg border border-red-200 py-1.5 font-bold text-red-600 text-[11px] hover:bg-red-50',
+                            ])
                         @endif
                     </div>
                 </div>
