@@ -7,8 +7,9 @@ use App\Models\LiveClass;
 use App\Models\MentoringBooking;
 use App\Models\MentorSlot;
 use App\Models\User;
+use App\Notifications\BookingApprovedMailNotification;
 use App\Notifications\BookingApprovedNotification;
-use App\Services\TelegramNotificationService;
+use App\Notifications\BookingRejectedMailNotification;
 use App\Services\TelegramService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -43,9 +44,12 @@ class MentorTemanNalarController extends Controller
             })
             ->values();
 
-        $liveClasses = LiveClass::where('mentor_id', $mentorId)
+        // Belajar Bersama mendatang dulu (terdekat), lalu riwayat yang sudah lewat (terbaru).
+        [$upcomingClasses, $pastClasses] = LiveClass::where('mentor_id', $mentorId)
             ->orderBy('schedule_time')
-            ->get();
+            ->get()
+            ->partition(fn (LiveClass $class) => ! Carbon::parse($class->schedule_time)->isPast());
+        $liveClasses = $upcomingClasses->concat($pastClasses->reverse())->values();
 
         return view('pages.mentor.teman-nalar.index', compact('slots', 'bookings', 'liveClasses'));
     }
@@ -112,7 +116,7 @@ class MentorTemanNalarController extends Controller
                 'status' => 'kosong',
             ]);
 
-            // Kirim notifikasi Telegram ke grup KawanNalar
+            // Umumkan ketersediaan sesi ke grup Telegram (info kelas saja; tanpa tautan meeting)
             $telegram->sendMentoringNotification([
                 'type' => '1on1',
                 'topic' => $topic,
@@ -121,6 +125,7 @@ class MentorTemanNalarController extends Controller
                 'school' => $mentor->mentorProfile?->high_school,
                 'date' => Carbon::parse($request->date)->translatedFormat('d F Y'),
                 'time' => substr($request->start_time, 0, 5),
+                'booking_url' => route('siswa.teman-nalar.booking.create', $mentor->id),
             ]);
 
             return redirect()->back()->with('success', 'Sesi Bimbingan Private berhasil ditambahkan!');
@@ -160,7 +165,7 @@ class MentorTemanNalarController extends Controller
     {
         $booking = MentoringBooking::where('mentor_id', Auth::id())
             ->where('status', 'pending')
-            ->with(['slot', 'student.studentProfile', 'mentor.mentorProfile'])
+            ->with(['slot', 'student'])
             ->findOrFail($id);
 
         if (! $booking->slot || Carbon::parse($booking->slot->date.' '.$booking->slot->start_time)->isPast()) {
@@ -174,31 +179,25 @@ class MentorTemanNalarController extends Controller
         $booking->slot->update(['status' => 'terisi']);
         $student = $booking->student;
         $schedule = Carbon::parse($booking->slot->date)->translatedFormat('d M Y').' '.substr($booking->slot->start_time, 0, 5).' WIB';
-        $mentor = $booking->mentor;
 
-        // Send Database Notification to Student
+        // Feedback booking Private 1-on-1 bersifat privat: notifikasi website + email ke siswa, tidak ke grup Telegram.
         if ($student) {
             $student->notify(new BookingApprovedNotification(
                 Auth::user()->name,
                 $booking->topic,
                 $schedule,
             ));
-        }
 
-        if ($student && $student->studentProfile && $student->studentProfile->telegram_chat_id) {
-            $university = $booking->mentor->mentorProfile?->university ?? 'PTN';
-            $message = "✅ <b>Booking Disetujui!</b>\nBooking sesi Bimbingan Private atas nama {$student->name} untuk {$schedule} dengan Kak ".Auth::user()->name." dari {$university} telah disetujui.\nSilakan buka KawanNalar untuk mengikuti sesi.";
-            TelegramNotificationService::send($student->studentProfile->telegram_chat_id, $message);
+            // Gagal kirim email (mis. SMTP tidak tersedia) tidak boleh menggagalkan persetujuan.
+            [$date, $time] = $this->sessionDateTime($booking->slot);
+            rescue(fn () => $student->notify(new BookingApprovedMailNotification(
+                Auth::user()->name,
+                $booking->topic,
+                $date,
+                $time,
+                route('siswa.teman-nalar.booking.meeting', $booking->id),
+            )), report: true);
         }
-
-        app(TelegramService::class)->sendBookingStatusNotification([
-            'status' => 'approved',
-            'student_name' => $student?->name,
-            'mentor_name' => $mentor?->name,
-            'university' => $mentor?->mentorProfile?->university,
-            'schedule' => $schedule,
-            'topic' => $booking->topic,
-        ]);
 
         return redirect()->back()->with('success', 'Booking berhasil disetujui!');
     }
@@ -214,11 +213,7 @@ class MentorTemanNalarController extends Controller
             'rejection_reason' => $request->validated('reason'),
         ]);
 
-        $student = $booking->student()->with('studentProfile')->first();
-        $mentor = $booking->mentor()->with('mentorProfile')->first();
-        $schedule = $booking->slot
-            ? Carbon::parse($booking->slot->date)->translatedFormat('d M Y').' '.substr($booking->slot->start_time, 0, 5).' WIB'
-            : '-';
+        $student = $booking->student;
 
         if ($booking->slot && ! MentoringBooking::where('mentor_slot_id', $booking->slot->id)
             ->whereIn('status', ['pending', 'approved'])
@@ -226,14 +221,17 @@ class MentorTemanNalarController extends Controller
             $booking->slot->update(['status' => 'kosong']);
         }
 
-        app(TelegramService::class)->sendBookingStatusNotification([
-            'status' => 'rejected',
-            'student_name' => $student?->name,
-            'mentor_name' => $mentor?->name,
-            'university' => $mentor?->mentorProfile?->university,
-            'schedule' => $schedule,
-            'topic' => $booking->topic,
-        ]);
+        // Alasan penolakan hanya untuk siswa terkait (email + halaman Booking Saya), tidak ke grup Telegram.
+        if ($student) {
+            [$date, $time] = $this->sessionDateTime($booking->slot);
+            rescue(fn () => $student->notify(new BookingRejectedMailNotification(
+                Auth::user()->name,
+                $booking->topic,
+                $date,
+                $time,
+                $booking->rejection_reason,
+            )), report: true);
+        }
 
         return redirect()->back()->with('success', 'Booking telah ditolak/dibatalkan.');
     }
@@ -277,5 +275,21 @@ class MentorTemanNalarController extends Controller
         $slot->delete();
 
         return redirect()->back()->with('success', 'Slot berhasil dihapus.');
+    }
+
+    /**
+     * Tanggal & jam sesi untuk email siswa, mis. ['Senin, 12 Oktober 2026', '19:00 - 20:00 WIB'].
+     * Locale 'id' dipasang di sini karena APP_LOCALE aplikasi masih 'en'.
+     */
+    private function sessionDateTime(?MentorSlot $slot): array
+    {
+        if (! $slot) {
+            return ['-', '-'];
+        }
+
+        return [
+            Carbon::parse($slot->date)->locale('id')->translatedFormat('l, d F Y'),
+            substr($slot->start_time, 0, 5).' - '.substr($slot->end_time, 0, 5).' WIB',
+        ];
     }
 }

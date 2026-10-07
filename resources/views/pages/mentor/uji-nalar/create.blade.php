@@ -1,8 +1,8 @@
 <x-layouts.mentor title="Buat Paket Soal Uji Nalar — Mentor">
 <div
     x-data="{
-        totalQuestions: 5,
-        questions: [],
+        totalQuestions: {{ (int) old('total_questions', 5) }},
+        questions: @js(array_values(old('questions', []))),
         init() {
             this.updateQuestions();
         },
@@ -28,7 +28,7 @@
     class="mx-auto max-w-5xl space-y-6 px-1 sm:px-0"
 >
     <div>
-        <a href="{{ route('mentor.uji-nalar.index') }}" class="text-xs font-bold text-[#0A52C4] hover:underline">‹ Kembali ke Kelola Soal</a>
+        <a href="{{ route('mentor.uji-nalar.index') }}" class="inline-flex items-center gap-0.5 text-xs font-bold text-[#0A52C4] hover:underline"><x-icon name="chevron_left" class="h-4 w-4" /> Kembali ke Kelola Soal</a>
         <h1 class="mt-2 text-2xl font-extrabold text-gray-900 sm:text-3xl">Buat Paket Soal Baru</h1>
         <p class="mt-1 text-sm text-gray-500">Isi detail paket soal dan pertanyaan beserta opsi jawaban A–E dan pembahasannya.</p>
         <p class="mt-2 rounded-xl bg-[#EEF4FF] px-3 py-2 text-xs leading-relaxed text-[#0A52C4]">
@@ -39,7 +39,7 @@
 
     @if ($errors->any())
     <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-700">
-        <p class="font-bold mb-1">Terjadi kesalahan pada input:</p>
+        <p class="mb-1 flex items-center gap-1 font-bold"><x-icon name="warning" class="h-4 w-4" /> Terjadi kesalahan pada input:</p>
         <ul class="list-disc pl-5 space-y-0.5">
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
@@ -53,7 +53,7 @@
 
         {{-- ── INFORMASI UTAMA PAKET ─────────────────────────────────── --}}
         <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm space-y-4">
-            <h2 class="font-extrabold text-gray-900 text-base border-b border-gray-100 pb-3">📌 Informasi Paket Soal</h2>
+            <h2 class="flex items-center gap-2 font-extrabold text-gray-900 text-base border-b border-gray-100 pb-3"><x-icon name="description" class="h-5 w-5 text-[#0A52C4]" /> Informasi Paket Soal</h2>
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <div class="sm:col-span-2">
@@ -84,7 +84,7 @@
 
                 <div class="sm:col-span-2">
                     <label class="block text-xs font-bold text-gray-700 mb-2">Preset Jumlah Soal <span class="text-red-500">*</span></label>
-                    <div class="flex gap-3">
+                    <div class="flex gap-2 sm:gap-3">
                         @foreach([5, 10, 15] as $preset)
                         <label class="flex-1 cursor-pointer">
                             <input type="radio" name="total_questions" value="{{ $preset }}" x-model="totalQuestions" @change="updateQuestions()" class="sr-only peer">
@@ -151,12 +151,12 @@
         </div>
 
         {{-- SUBMIT BUTTON --}}
-        <div class="flex justify-end gap-3 pt-4">
-            <a href="{{ route('mentor.uji-nalar.index') }}" class="rounded-xl border border-gray-200 bg-white px-6 py-3 text-xs font-bold text-gray-600 hover:bg-gray-50 transition">
+        <div class="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end">
+            <a href="{{ route('mentor.uji-nalar.index') }}" class="rounded-xl border border-gray-200 bg-white px-6 py-3 text-center text-xs font-bold text-gray-600 hover:bg-gray-50 transition">
                 Batal
             </a>
-            <button type="submit" class="rounded-xl bg-[#F28C28] px-8 py-3 text-xs font-bold text-white shadow-md hover:bg-[#E07D1C] transition">
-                🚀 Submit Paket Soal untuk Moderasi
+            <button type="submit" class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-cta px-8 py-3 text-xs font-bold text-navy shadow-sm hover:bg-cta-dark transition">
+                <x-icon name="send" class="h-4 w-4" /> Kirim Paket Soal untuk Moderasi
             </button>
         </div>
     </form>

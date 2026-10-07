@@ -7,8 +7,8 @@
     </div>
 
     @if(session('status'))
-    <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
-        ✓ {{ session('status') }}
+    <div class="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
+        <x-icon name="check_circle" class="h-5 w-5" /> {{ session('status') }}
     </div>
     @endif
 
@@ -16,7 +16,7 @@
     <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6 space-y-4">
         <div class="flex items-center justify-between">
             <h2 class="font-extrabold text-gray-900 text-base flex items-center gap-2">
-                ⏳ Menunggu Persetujuan
+                <x-icon name="hourglass_bottom" class="h-5 w-5 text-amber-600" /> Menunggu Persetujuan
                 <span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-extrabold text-amber-700">
                     {{ $pendingQuizzes->count() }}
                 </span>
@@ -52,15 +52,15 @@
                         <form method="POST" action="{{ route('admin.quizzes.approve', $quiz) }}">
                             @csrf
                             @method('PATCH')
-                            <button type="submit" class="rounded-xl bg-green-600 px-4 py-2 text-xs font-bold text-white hover:bg-green-700 transition shadow-sm">
-                                ✓ Setujui
+                            <button type="submit" class="inline-flex items-center gap-0.5 rounded-xl bg-green-600 px-4 py-2 text-xs font-bold text-white hover:bg-green-700 transition shadow-sm">
+                                <x-icon name="check" class="h-3.5 w-3.5" /> Setujui
                             </button>
                         </form>
 
                         <button @click="unapprove = false; targetQuizId = {{ $quiz->id }}; targetQuizTitle = '{{ addslashes($quiz->title) }}'; rejectModal = true;"
                                 type="button"
-                                class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100 transition">
-                            ✕ Tolak
+                                class="inline-flex items-center gap-0.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100 transition">
+                            <x-icon name="close" class="h-3.5 w-3.5" /> Tolak
                         </button>
                     </div>
                 </div>
@@ -93,7 +93,7 @@
 
     {{-- ── PAKET SOAL APPROVED (RIWAYAT) ──────────────────────────── --}}
     <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6 space-y-4">
-        <h2 class="font-extrabold text-gray-900 text-base">✓ Riwayat Paket Soal Disetujui</h2>
+        <h2 class="font-extrabold text-gray-900 text-base flex items-center gap-2"><x-icon name="check_circle" class="h-5 w-5 text-green-600" /> Riwayat Paket Soal Disetujui</h2>
 
         @if($approvedQuizzes->isEmpty())
         <p class="text-xs text-gray-400">Belum ada paket soal yang disetujui.</p>

@@ -36,11 +36,9 @@
                 <h2 class="text-base font-extrabold text-gray-900">Buat Sesi Baru</h2>
                 <p class="text-xs text-gray-500 mt-0.5">Tambah sesi private atau jadwal Belajar Bersama</p>
             </div>
-            <button @click="showModal = false" type="button"
+            <button @click="showModal = false" type="button" aria-label="Tutup"
                 class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <x-icon name="close" class="h-5 w-5" />
             </button>
         </div>
 
@@ -58,16 +56,16 @@
                         :class="type === '1on1'
                             ? 'bg-white shadow text-[#0A52C4] border-blue-200'
                             : 'text-gray-500 border-transparent hover:text-gray-700'"
-                        class="flex-1 rounded-lg border py-2 text-sm font-bold transition">
-                        👤 Bimbingan 1-on-1
+                        class="flex-1 whitespace-nowrap rounded-lg border px-1 py-2 text-xs font-bold transition sm:text-sm">
+                        <span class="inline-flex items-center justify-center gap-1.5"><x-icon name="person" class="h-4 w-4" /> Bimbingan 1-on-1</span>
                     </button>
                     <button type="button"
                         @click="type = 'live_class'"
                         :class="type === 'live_class'
                             ? 'bg-white shadow text-[#0A52C4] border-blue-200'
                             : 'text-gray-500 border-transparent hover:text-gray-700'"
-                        class="flex-1 rounded-lg border py-2 text-sm font-bold transition">
-                        🎥 Belajar Bersama
+                        class="flex-1 whitespace-nowrap rounded-lg border px-1 py-2 text-xs font-bold transition sm:text-sm">
+                        <span class="inline-flex items-center justify-center gap-1.5"><x-icon name="groups" class="h-4 w-4" /> Belajar Bersama</span>
                     </button>
                 </div>
                 <input type="hidden" name="session_type" :value="type">
@@ -212,9 +210,9 @@
                 <button type="submit"
                     :disabled="type === '1on1' && (!isValidTime || !startTime || !endTime)"
                     :class="(type === '1on1' && (!isValidTime || !startTime || !endTime))
-                        ? 'opacity-50 cursor-not-allowed bg-gray-400'
-                        : 'bg-[#FF6B00] hover:bg-[#E56000] cursor-pointer'"
-                    class="flex-1 rounded-xl py-2.5 text-sm font-bold text-white shadow transition">
+                        ? 'cursor-not-allowed bg-gray-200 text-gray-400'
+                        : 'cursor-pointer bg-cta text-navy hover:bg-cta-dark'"
+                    class="flex-1 rounded-xl py-2.5 text-sm font-bold shadow-sm transition">
                     Simpan Sesi
                 </button>
             </div>

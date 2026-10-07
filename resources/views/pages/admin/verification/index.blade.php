@@ -46,7 +46,7 @@
                                 <p class="mt-1 text-xs text-gray-400">Lulus {{ $profile?->graduation_year ?? '-' }}</p>
                             </td>
                             <td class="px-5 py-4"><a href="https://wa.me/{{ preg_replace('/\D+/', '', $profile?->whatsapp ?? '') }}" target="_blank" rel="noopener" class="font-semibold text-[#0A52C4] hover:underline">{{ $profile?->whatsapp ?? '-' }}</a></td>
-                            <td class="px-5 py-4">@if ($profile?->ktm_path)<a href="{{ route('admin.mentors.ktm', $mentor->id) }}" target="_blank" rel="noopener" class="font-semibold text-[#0A52C4] hover:underline">Lihat KTM</a>@else<span class="text-gray-400">Tidak ada</span>@endif</td>
+                            <td class="px-5 py-4">@if ($profile?->ktm_path)<x-ktm-preview-link :mentor="$mentor" class="font-semibold text-[#0A52C4] hover:underline">Lihat KTM</x-ktm-preview-link>@else<span class="text-gray-400">Tidak ada</span>@endif</td>
                             <td class="whitespace-nowrap px-5 py-4 text-gray-600">{{ $mentor->created_at?->format('d M Y') }}</td>
                             <td class="px-5 py-4">
                                 <div class="flex justify-end gap-2">
@@ -71,7 +71,7 @@
                     <p class="text-xs text-gray-500">{{ $profile?->major ?? '-' }} · {{ $profile?->high_school ?? '-' }} · Lulus {{ $profile?->graduation_year ?? '-' }}</p>
                     <div class="mt-3 grid grid-cols-2 gap-2">
                         @if ($profile?->ktm_path)
-                        <a href="{{ route('admin.mentors.ktm', $mentor->id) }}" target="_blank" rel="noopener" class="rounded-lg border border-[#0A52C4]/30 bg-white px-3 py-2 text-center text-xs font-bold text-[#0A52C4]">🪪 Lihat KTM</a>
+                        <x-ktm-preview-link :mentor="$mentor" class="flex items-center justify-center gap-1.5 rounded-lg border border-[#0A52C4]/30 bg-white px-3 py-2 text-center text-xs font-bold text-[#0A52C4]"><x-icon name="badge" class="h-4 w-4" /> Lihat KTM</x-ktm-preview-link>
                         @else
                         <span class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-center text-xs font-semibold text-gray-400">KTM tidak ada</span>
                         @endif
@@ -167,4 +167,5 @@
             @endif
         </section>
     </div>
+    <x-module-preview-modal label="Pratinjau KTM" />
 </x-layouts.admin>

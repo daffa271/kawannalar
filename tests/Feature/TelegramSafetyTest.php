@@ -64,7 +64,7 @@ it('keeps the mentoring flow working when Telegram is not configured', function 
     Http::assertNothingSent();
 });
 
-it('never sends the private meeting link to the Telegram group on approval', function () {
+it('never sends booking feedback or the private meeting link to the Telegram group on approval', function () {
     Http::fake();
 
     $mentor = telegramSafetyMentor();
@@ -90,8 +90,8 @@ it('never sends the private meeting link to the Telegram group on approval', fun
         ->patch(route('mentor.teman-nalar.booking.approve', $booking->id))
         ->assertSessionHas('success');
 
-    Http::assertSent(fn ($request) => str_contains($request['text'], 'DISETUJUI'));
-    Http::assertNotSent(fn ($request) => str_contains($request['text'], 'private-room'));
+    // Persetujuan Private 1-on-1 hanya lewat email siswa + website; grup Telegram tidak menerima apa pun.
+    Http::assertNothingSent();
 });
 
 it('does not write the bot token to the log when Telegram is unreachable', function () {

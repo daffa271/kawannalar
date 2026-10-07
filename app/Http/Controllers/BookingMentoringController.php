@@ -7,7 +7,6 @@ use App\Models\MentoringBooking;
 use App\Models\MentorSlot;
 use App\Notifications\BookingRequestMailNotification;
 use App\Notifications\NewBookingNotification;
-use App\Services\TelegramNotificationService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -76,14 +75,9 @@ class BookingMentoringController extends Controller
             $booking->message,
         )), report: true);
 
-        // 2) Telegram Notification (requires TELEGRAM_BOT_TOKEN in .env and chat_ids stored in profiles)
-        $mentorMsg  = "🔔 Ada Booking Baru dari <b>{$studentName}</b> ({$studentSchool})\n📚 Topik: {$booking->topic}\n📅 Jadwal: {$schedule}\nStatus: Menunggu konfirmasi mentor.";
-        $studentMsg = "🕒 <b>Booking Diterima</b>\nBooking kamu dengan <b>{$mentor->name}</b> masih menunggu konfirmasi mentor.\n📅 {$schedule}";
-
-        TelegramNotificationService::send($mentor->mentorProfile->telegram_chat_id ?? null, $mentorMsg);
-        TelegramNotificationService::send($student->studentProfile->telegram_chat_id ?? null, $studentMsg);
-
+        // Booking Private 1-on-1 bersifat privat: tidak ada notifikasi ke grup Telegram.
+        // Hasil persetujuan dikirim ke email siswa saat mentor menyetujui/menolak.
         return redirect()->route('siswa.teman-nalar.index', ['tab' => 'my-bookings'])
-            ->with('success', "🚀 Booking berhasil! Kak {$mentor->name} akan segera mengkonfirmasi jadwal kamu.");
+            ->with('success', "Booking berhasil! Status: Menunggu Persetujuan. Kak {$mentor->name} akan mengonfirmasi, dan hasilnya kami kirim ke email kamu.");
     }
 }

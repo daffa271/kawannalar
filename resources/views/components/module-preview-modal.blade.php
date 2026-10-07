@@ -1,4 +1,7 @@
-{{-- Pratinjau modul (PDF/gambar), dibuka lewat $dispatch('module-preview', {...}). Logika: public/js/module-preview.js --}}
+{{-- Pratinjau modul (PDF/gambar), dibuka lewat $dispatch('module-preview', {...}). Logika: public/js/module-preview.js
+     Juga dipakai admin untuk KTM (label="Pratinjau KTM"); tombol Unduh hanya tampil bila payload punya "download". --}}
+@props(['label' => 'Pratinjau Modul'])
+
 <script src="{{ asset('js/module-preview.js') }}?v={{ filemtime(public_path('js/module-preview.js')) }}"></script>
 
 <div x-data="modulePreview()"
@@ -12,10 +15,10 @@
     <div @click.outside="close()" class="flex h-full w-full flex-col overflow-hidden bg-white sm:h-[85vh] sm:max-w-3xl sm:rounded-2xl">
         <div class="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
             <div class="min-w-0 flex-1">
-                <p class="text-[10px] font-bold uppercase tracking-wider text-[#0A52C4]">Pratinjau Modul</p>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-[#0A52C4]">{{ $label }}</p>
                 <p class="truncate text-sm font-extrabold text-gray-900" x-text="title"></p>
             </div>
-            <a :href="download"
+            <a :href="download" x-show="download"
                 class="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#F28C28] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#E07D1C]">
                 <x-icon name="download" class="h-4 w-4" /> Unduh
             </a>
@@ -30,7 +33,7 @@
 
             <div x-show="state === 'error'" class="px-4 py-16 text-center">
                 <p class="text-sm font-bold text-gray-700">Pratinjau tidak dapat ditampilkan.</p>
-                <p class="mt-1 text-xs text-gray-500">Buka di tab baru atau unduh filenya.</p>
+                <p class="mt-1 text-xs text-gray-500" x-text="download ? 'Buka di tab baru atau unduh filenya.' : 'Buka di tab baru untuk melihat filenya.'">Buka di tab baru atau unduh filenya.</p>
                 <a :href="url" target="_blank" rel="noopener"
                     class="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-[#0A52C4]/30 bg-white px-3 py-2 text-xs font-bold text-[#0A52C4]">
                     <x-icon name="open_in_new" class="h-4 w-4" /> Buka di tab baru

@@ -14,10 +14,11 @@ $profileSubtitle = match ($role) {
     'admin' => 'Inovator KawanNalar',
     default => $studentGrade ? 'Siswa ' . trim($studentGrade) : 'Siswa',
 };
+// Lencana peran (ikon Material Symbols, warna per peran) — dipakai di navbar & menu profil.
 $roleBadge = match ($role) {
-    'mentor' => '<span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/60 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-800"><span>👨‍🏫</span> Mentor Verified</span>',
-    'admin' => '<span class="inline-flex items-center gap-1.5 rounded-full border border-blue-200/60 bg-blue-50 px-2.5 py-1 text-[10px] font-semibold text-blue-800"><span>⚡</span> Admin System</span>',
-    default => '<span class="inline-flex items-center gap-1.5 rounded-full border border-amber-200/60 bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-900 shadow-sm"><span>🏆</span> ' . number_format($studentXp) . ' XP</span>',
+    'mentor' => ['icon' => 'verified', 'label' => 'Mentor Verified', 'class' => 'border-emerald-200/60 bg-emerald-50 text-emerald-800'],
+    'admin' => ['icon' => 'admin_panel_settings', 'label' => 'Admin System', 'class' => 'border-blue-200/60 bg-blue-50 text-blue-800'],
+    default => ['icon' => 'trophy', 'label' => number_format($studentXp).' XP', 'class' => 'border-amber-200/60 bg-amber-50 text-amber-900'],
 };
 @endphp
 
@@ -47,22 +48,10 @@ $roleBadge = match ($role) {
         </div>
 
         <div class="ml-auto flex items-center gap-2 md:gap-3 lg:gap-4">
-            @if ($role === 'siswa')
-            <div class="hidden sm:flex items-center gap-1.5 rounded-full border border-amber-200/60 bg-amber-50 px-2.5 py-1.5 text-amber-900 shadow-sm sm:px-3.5">
-                <span class="text-sm md:text-base">🏆</span>
-                <span class="text-[11px] font-bold md:text-sm">{{ number_format($studentXp) }} XP</span>
+            <div class="hidden sm:flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 shadow-sm {{ $roleBadge['class'] }} {{ $role === 'siswa' ? 'sm:px-3.5' : '' }}">
+                <x-icon :name="$roleBadge['icon']" class="h-4 w-4" />
+                <span class="{{ $role === 'siswa' ? 'text-[11px] font-bold md:text-sm' : 'text-[11px] font-semibold' }}">{{ $roleBadge['label'] }}</span>
             </div>
-            @elseif ($role === 'mentor')
-            <div class="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-200/60 bg-emerald-50 px-2.5 py-1.5 text-emerald-800 shadow-sm">
-                <span>👨‍🏫</span>
-                <span class="text-[11px] font-semibold">Mentor Verified</span>
-            </div>
-            @else
-            <div class="hidden sm:flex items-center gap-1.5 rounded-full border border-blue-200/60 bg-blue-50 px-2.5 py-1.5 text-blue-800 shadow-sm">
-                <span>⚡</span>
-                <span class="text-[11px] font-semibold">Admin System</span>
-            </div>
-            @endif
 
             <div class="relative">
                 <button @click="notifOpen = !notifOpen" class="relative flex min-h-[40px] min-w-[40px] items-center justify-center rounded-full p-2.5 text-slate-600 transition hover:bg-slate-100" aria-label="Notifikasi{{ $unreadCount > 0 ? ' ('.$unreadCount.' belum dibaca)' : '' }}">
@@ -116,7 +105,9 @@ $roleBadge = match ($role) {
                         <p class="truncate text-sm font-bold text-slate-800">{{ $name }}</p>
                         <p class="truncate text-xs text-slate-500 mb-2">{{ $user?->email }}</p>
                         <div class="mt-1.5">
-                            {!! $roleBadge !!}
+                            <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold {{ $roleBadge['class'] }}">
+                                <x-icon :name="$roleBadge['icon']" class="h-3.5 w-3.5" /> {{ $roleBadge['label'] }}
+                            </span>
                         </div>
                     </div>
                     <a href="{{ route('profile.edit') }}" class="block px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-50">Profil Saya</a>

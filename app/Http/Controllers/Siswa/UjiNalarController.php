@@ -23,7 +23,7 @@ class UjiNalarController extends Controller
     /**
      * Halaman utama Uji Nalar untuk siswa.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
@@ -69,9 +69,15 @@ class UjiNalarController extends Controller
         $subjects = Subject::orderBy('name')->get();
         $classes  = ['10', '11', '12'];
 
+        // Filter Bank Soal dari form GET; nilai yang tidak dikenal diabaikan.
+        $selectedKelas = in_array($request->query('kelas'), $classes, true) ? $request->query('kelas') : null;
+        $selectedSubject = $subjects->firstWhere('id', (int) $request->query('subject'))?->id;
+
         // ── Approved quizzes untuk Bank Soal Sekolah ─────────────────────────
         $bankSoalQuizzes = Quiz::approved()
             ->with('subject')
+            ->when($selectedKelas, fn (Builder $query) => $query->where('class_level', $selectedKelas))
+            ->when($selectedSubject, fn (Builder $query) => $query->where('subject_id', $selectedSubject))
             ->latest()
             ->take(20)
             ->get();
@@ -90,6 +96,8 @@ class UjiNalarController extends Controller
             'subjects',
             'classes',
             'bankSoalQuizzes',
+            'selectedKelas',
+            'selectedSubject',
         ));
     }
 
@@ -187,7 +195,7 @@ class UjiNalarController extends Controller
             'pageTitle' => 'Nalar Kilat — '.count($questionIds).' Soal',
             'pageMeta' => 'Soal acak dari Bank Soal yang telah disetujui',
             'retryUrl' => route('siswa.uji-nalar.kilat', count($questionIds)),
-            'retryLabel' => '⚡ Latihan Kilat Lagi',
+            'retryLabel' => 'Latihan Kilat Lagi',
         ]);
     }
 

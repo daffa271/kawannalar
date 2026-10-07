@@ -26,7 +26,10 @@ class TelegramService
     }
 
     /**
-     * Kirim notifikasi ke grup/channel Telegram saat sesi mentoring baru dibuat.
+     * Umumkan kelas baru ke grup Telegram KawanNalar (Private 1-on-1 maupun Belajar Bersama).
+     *
+     * Grup Telegram hanya papan pengumuman kelas. Data booking/siswa dan tautan meeting
+     * Private 1-on-1 tidak pernah dikirim ke grup; feedback booking lewat website + email siswa.
      *
      * @param  array  $sessionData
      *   - type        : '1on1' | 'live_class'
@@ -35,6 +38,7 @@ class TelegramService
      *   - date        : string   (tanggal tampil, sudah diformat)
      *   - time        : string   (jam mulai, sudah diformat)
      *   - link        : string   (meeting link, hanya untuk live_class — link sesi private tidak pernah dikirim)
+     *   - booking_url : string   (halaman booking di website, hanya untuk 1on1)
      * @return bool
      */
     public function sendMentoringNotification(array $sessionData): bool
@@ -42,7 +46,7 @@ class TelegramService
         $isLiveClass = ($sessionData['type'] ?? '1on1') === 'live_class';
         $typeLabel = $isLiveClass
             ? '🎓 <b>BELAJAR BERSAMA BARU TERSEDIA!</b>'
-            : '📢 <b>SESI BIMBINGAN PRIVATE TERSEDIA!</b>';
+            : '📢 <b>SESI PRIVATE 1-ON-1 TERSEDIA!</b>';
 
         $messageLines = [
             $typeLabel,
@@ -68,30 +72,14 @@ class TelegramService
             $messageLines[] = '✨ Yuk ikut Belajar Bersama di KawanNalar.';
         } else {
             $messageLines[] = '';
-            $messageLines[] = '✨ Sesi tersedia untuk dibooking melalui KawanNalar.';
+            $messageLines[] = '✨ Booking sesi ini melalui website KawanNalar.';
+
+            if (!empty($sessionData['booking_url'])) {
+                $messageLines[] = '👉 <a href="' . htmlspecialchars($sessionData['booking_url'], ENT_QUOTES) . '">Lihat jadwal &amp; booking</a>';
+            }
         }
 
         return $this->sendGroupMessage(implode("\n", $messageLines));
-    }
-
-    public function sendBookingStatusNotification(array $bookingData): bool
-    {
-        $status = $bookingData['status'] ?? 'approved';
-        $statusLabel = $status === 'approved' ? '✅ DISETUJUI' : '❌ DITOLAK';
-
-        return $this->sendGroupMessage(implode("\n", [
-            "<b>Booking Bimbingan Private {$statusLabel}</b>",
-            '',
-            '<b>Nama siswa:</b> ' . htmlspecialchars($bookingData['student_name'] ?? '-', ENT_XML1),
-            '<b>Mentor:</b> Kak ' . htmlspecialchars($bookingData['mentor_name'] ?? '-', ENT_XML1),
-            '<b>PTN:</b> ' . htmlspecialchars($bookingData['university'] ?? '-', ENT_XML1),
-            '<b>Jadwal:</b> ' . htmlspecialchars($bookingData['schedule'] ?? '-', ENT_XML1),
-            '<b>Topik:</b> ' . htmlspecialchars($bookingData['topic'] ?? '-', ENT_XML1),
-            '',
-            $status === 'approved'
-                ? 'Silakan buka KawanNalar untuk mengikuti sesi sesuai jadwal.'
-                : 'Sesi ini tidak dapat dilanjutkan. Silakan pilih sesi lain di KawanNalar.',
-        ]));
     }
 
     /**

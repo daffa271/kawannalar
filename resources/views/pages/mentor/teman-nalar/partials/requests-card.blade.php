@@ -62,15 +62,15 @@
             {{-- Approve / Reject Buttons --}}
             <div class="mt-3 flex gap-2">
                 @if(auth()->user()->is_suspended)
-                    <button disabled class="flex-1 rounded-lg bg-gray-200 py-2 text-xs font-bold text-gray-400 cursor-not-allowed">
-                        ✅ Setujui
+                    <button disabled class="inline-flex flex-1 items-center justify-center gap-1 rounded-lg bg-gray-200 py-2 text-xs font-bold text-gray-400 cursor-not-allowed">
+                        <x-icon name="check" class="h-4 w-4" /> Setujui
                     </button>
-                    <button disabled class="flex-1 rounded-lg border border-gray-150 bg-gray-100 py-2 text-xs font-bold text-gray-400 cursor-not-allowed">
-                        ❌ Tolak
+                    <button disabled class="inline-flex flex-1 items-center justify-center gap-1 rounded-lg border border-gray-200 bg-gray-100 py-2 text-xs font-bold text-gray-400 cursor-not-allowed">
+                        <x-icon name="close" class="h-4 w-4" /> Tolak
                     </button>
                 @else
                     @include('pages.mentor.teman-nalar.partials.booking-moderation-buttons', [
-                        'approveClass' => 'flex-1 rounded-lg bg-green-500 py-2 text-xs font-bold text-white hover:bg-green-600 active:scale-95 transition',
+                        'approveClass' => 'flex-1 rounded-lg bg-green-600 py-2 text-xs font-bold text-white hover:bg-green-700 active:scale-95 transition',
                         'rejectClass' => 'flex-1 rounded-lg border border-red-200 bg-red-50 py-2 text-xs font-bold text-red-600 hover:bg-red-100 active:scale-95 transition',
                     ])
                 @endif

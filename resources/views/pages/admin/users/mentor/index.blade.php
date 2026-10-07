@@ -7,7 +7,7 @@
         <div>
             <div class="flex items-center gap-2 text-xs text-gray-500 mb-1">
                 <a href="{{ route('dashboard.admin') }}" class="hover:text-[#0A52C4]">Dashboard</a>
-                <span>›</span><span class="font-semibold text-gray-700">User Management · Mentor</span>
+                <x-icon name="chevron_right" class="h-3.5 w-3.5" /><span class="font-semibold text-gray-700">User Management · Mentor</span>
             </div>
             <h1 class="text-2xl font-extrabold text-gray-900">Manajemen Mentor</h1>
             <p class="mt-1 text-sm text-gray-500">Total <span class="font-bold text-gray-800">{{ $mentors->total() }}</span> mentor terdaftar.</p>
@@ -59,7 +59,7 @@
         <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 class="font-extrabold text-gray-800 text-sm">Daftar Mentor</h2>
             <div class="flex items-center gap-2">
-                <span class="rounded-lg bg-yellow-50 border border-yellow-200 px-2.5 py-1 text-xs font-bold text-yellow-700">⚡ {{ $pending }} Pending Verifikasi</span>
+                <span class="inline-flex items-center gap-1 rounded-lg bg-yellow-50 border border-yellow-200 px-2.5 py-1 text-xs font-bold text-yellow-700"><x-icon name="hourglass_bottom" class="h-3.5 w-3.5" /> {{ $pending }} Pending Verifikasi</span>
             </div>
         </div>
         <div class="overflow-x-auto">

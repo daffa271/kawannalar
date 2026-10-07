@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -14,7 +15,13 @@ class RuangNalarController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Module::query()->with('uploader:id,name')->where('status', 'approved');
+        $query = Module::query()
+            ->with([
+                'uploader:id,name,role',
+                'uploader.mentorProfile:id,user_id,university',
+                'uploader.studentProfile:id,user_id,school',
+            ])
+            ->where('status', 'approved');
 
         $query->when($request->filled('subject'), fn($builder) => $builder->where('subject', $request->string('subject')->toString()));
         $query->when($request->filled('grade'), fn($builder) => $builder->where('grade', $request->string('grade')->toString()));
@@ -25,6 +32,11 @@ class RuangNalarController extends Controller
                     ->orWhere('description', 'like', "%{$search}%");
             });
         });
+
+        // "Terpopuler" = paling banyak diunduh; selain itu terbaru.
+        if ($request->query('sort') === 'popular') {
+            $query->orderByDesc('download_count');
+        }
 
         $modules = $query->latest()->paginate(12)->withQueryString();
 
@@ -68,8 +80,8 @@ class RuangNalarController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],
-            'subject' => ['required', 'string', 'max:100'],
-            'grade' => ['required', 'string', 'max:50'],
+            'subject' => ['required', 'string', Rule::in(Module::SUBJECTS)],
+            'grade' => ['required', 'string', Rule::in(Module::GRADES)],
             'file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:25600'],
         ]);
 

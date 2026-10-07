@@ -35,7 +35,7 @@
 
             <p class="text-sm leading-5 text-blue-800">
                 <span class="font-bold">Info Telegram:</span>
-                Jadwal baru dan status booking diumumkan di grup Telegram KawanNalar. Tautan Google Meet sesi privat hanya muncul di halaman ini setelah booking disetujui.
+                Kelas baru diumumkan di <a href="{{ config('services.telegram.group_url') }}" target="_blank" rel="noopener noreferrer" class="font-semibold underline">grup Telegram KawanNalar</a>. Status booking Private 1-on-1 dikirim lewat email dan halaman ini; tautan meeting muncul setelah booking Disetujui.
             </p>
         </div>
 

@@ -38,13 +38,9 @@
                     <label for="subject" class="field-label">Mata Pelajaran</label>
                     <select id="subject" name="subject" required class="field-input">
                         <option value="">Pilih mata pelajaran</option>
-                        <option>Matematika</option>
-                        <option>Fisika</option>
-                        <option>Kimia</option>
-                        <option>Biologi</option>
-                        <option>UTBK TPS</option>
-                        <option>Literasi Bahasa</option>
-                        <option>Penalaran Umum</option>
+                        @foreach (\App\Models\Module::SUBJECTS as $option)
+                        <option value="{{ $option }}" @selected(old('subject') === $option)>{{ $option }}</option>
+                        @endforeach
                     </select>
                     <x-input-error :messages="$errors->get('subject')" class="field-error" />
                 </div>
@@ -53,10 +49,9 @@
                     <label for="grade" class="field-label">Target Kelas</label>
                     <select id="grade" name="grade" required class="field-input">
                         <option value="">Pilih target kelas</option>
-                        <option>Kelas 10</option>
-                        <option>Kelas 11</option>
-                        <option>Kelas 12</option>
-                        <option>UTBK</option>
+                        @foreach (\App\Models\Module::GRADES as $option)
+                        <option value="{{ $option }}" @selected(old('grade') === $option)>{{ $option }}</option>
+                        @endforeach
                     </select>
                     <x-input-error :messages="$errors->get('grade')" class="field-error" />
                 </div>
@@ -70,8 +65,8 @@
             </div>
 
             <div class="flex justify-end border-t border-gray-100 pt-5">
-                <button type="submit" class="rounded-xl bg-[#F28C28] px-6 py-3 text-sm font-bold text-white hover:bg-[#E07D1C]">
-                    Kirim ke Admin
+                <button type="submit" class="inline-flex items-center gap-1.5 rounded-xl bg-cta px-6 py-3 text-sm font-bold text-navy transition hover:bg-cta-dark">
+                    <x-icon name="send" class="h-4 w-4" /> Kirim ke Admin
                 </button>
             </div>
         </form>

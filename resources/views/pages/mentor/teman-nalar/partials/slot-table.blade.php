@@ -9,12 +9,12 @@
         </div>
         @if($showAddButton ?? false)
             @if(auth()->user()->is_suspended)
-            <button disabled type="button" class="shrink-0 rounded-xl bg-gray-200 px-4 py-2 text-xs font-bold text-gray-400 cursor-not-allowed">
-                + Tambah Slot
+            <button disabled type="button" class="inline-flex shrink-0 cursor-not-allowed items-center gap-1 rounded-xl bg-gray-200 px-4 py-2 text-xs font-bold text-gray-400">
+                <x-icon name="add" class="h-4 w-4" /> Tambah Slot
             </button>
             @else
-            <button @click="showModal = true" type="button" class="shrink-0 rounded-xl bg-[#F28C28] px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#E07D1C] transition">
-                + Tambah Slot
+            <button @click="showModal = true" type="button" class="inline-flex shrink-0 items-center gap-1 rounded-xl bg-cta px-4 py-2 text-xs font-bold text-navy shadow-sm transition hover:bg-cta-dark">
+                <x-icon name="add" class="h-4 w-4" /> Tambah Slot
             </button>
             @endif
         @endif
@@ -48,7 +48,7 @@
                 @empty
                 <tr>
                     <td colspan="5" class="py-8 text-center text-sm text-gray-400 font-medium">
-                        Belum ada slot waktu luang yang dibuat. Klik <strong>+ Tambah Slot</strong> untuk membuka jadwal bimbingan!
+                        Belum ada slot waktu luang yang dibuat. Tambahkan slot untuk membuka jadwal bimbingan!
                     </td>
                 </tr>
                 @endforelse
@@ -78,7 +78,7 @@
         </div>
         @empty
         <p class="px-5 py-8 text-center text-sm text-gray-400 font-medium">
-            Belum ada slot waktu luang yang dibuat. Klik <strong>+ Tambah Slot</strong> untuk membuka jadwal bimbingan!
+            Belum ada slot waktu luang yang dibuat. Tambahkan slot untuk membuka jadwal bimbingan!
         </p>
         @endforelse
     </div>

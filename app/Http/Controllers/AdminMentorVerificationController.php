@@ -8,6 +8,7 @@ use App\Models\Quiz;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -82,14 +83,30 @@ class AdminMentorVerificationController extends Controller
 
     public function approveModule(Request $request, Module $module): RedirectResponse
     {
-        $module->update([
+        $attributes = [
             'status' => 'approved',
             'approved_by' => $request->user()->id,
             'approved_at' => now(),
             'rejection_reason' => null,
-        ]);
+        ];
 
-        return back()->with('status', 'Modul berhasil disetujui dan dapat dilihat siswa.');
+        // XP hanya untuk transisi pending → approved. Update bersyarat ini atomik,
+        // jadi klik ganda / persetujuan ulang tidak memberi XP dua kali.
+        $awarded = DB::transaction(function () use ($module, $attributes): bool {
+            $fromPending = Module::whereKey($module->getKey())->where('status', 'pending')->update($attributes) === 1;
+
+            if ($fromPending) {
+                $module->uploader()->increment('xp_points', Module::APPROVAL_XP);
+            } else {
+                $module->update($attributes);
+            }
+
+            return $fromPending;
+        });
+
+        return back()->with('status', $awarded
+            ? 'Modul berhasil disetujui dan dapat dilihat siswa. Pengunggah mendapat +'.Module::APPROVAL_XP.' XP.'
+            : 'Modul berhasil disetujui dan dapat dilihat siswa.');
     }
 
     public function rejectModule(RejectionReasonRequest $request, Module $module): RedirectResponse

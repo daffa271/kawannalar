@@ -5,7 +5,7 @@
     <div x-data="{ tab: '1on1', showModal: {{ $errors->any() ? 'true' : 'false' }} }" class="space-y-8 pb-24">
         @if(auth()->user()->is_suspended)
         <div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700 flex items-center gap-3">
-            <span class="text-xl">⚠️</span>
+            <x-icon name="warning" class="h-6 w-6" />
             <span>Akun Anda sedang ditangguhkan oleh Admin. Silakan hubungi dukungan KawanNalar.</span>
         </div>
         @endif
@@ -16,31 +16,26 @@
                 <p class="mt-1 text-sm text-gray-500">Kelola sesi bimbingan private dan Belajar Bersama.</p>
             </div>
             @if(auth()->user()->is_suspended)
-            <button disabled class="inline-flex items-center gap-2 rounded-xl bg-gray-200 px-4 py-2.5 text-sm font-bold text-gray-400 cursor-not-allowed">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Buat Slot Baru
+            <button disabled class="inline-flex items-center justify-center gap-2 rounded-xl bg-gray-200 px-4 py-2.5 text-sm font-bold text-gray-400 cursor-not-allowed">
+                <x-icon name="add" class="h-5 w-5" /> Buat Slot Baru
             </button>
             @else
-            <button @click="showModal = true" class="inline-flex items-center gap-2 rounded-xl bg-[#FF6B00] px-4 py-2.5 text-sm font-bold text-white shadow hover:bg-[#E56000] transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Buat Slot Baru
+            {{-- Aksi utama: oranye brand + teks navy (sama dengan landing & dashboard) --}}
+            <button @click="showModal = true" class="inline-flex items-center justify-center gap-2 rounded-xl bg-cta px-4 py-2.5 text-sm font-bold text-navy shadow-sm hover:bg-cta-dark transition">
+                <x-icon name="add" class="h-5 w-5" /> Buat Slot Baru
             </button>
             @endif
         </div>
 
         @if(session('success'))
         <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-800 flex items-center gap-2">
-            ✅ {{ session('success') }}
+            <x-icon name="check_circle" class="h-5 w-5" /> {{ session('success') }}
         </div>
         @endif
 
         @if(session('error'))
         <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-800 flex items-center gap-2">
-            ❌ {{ session('error') }}
+            <x-icon name="cancel" class="h-5 w-5" /> {{ session('error') }}
         </div>
         @endif
 

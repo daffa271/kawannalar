@@ -163,7 +163,7 @@ default => [],
             <div class="flex items-center gap-3">
                 <div class="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#0A52C4] to-[#16418C] text-base font-extrabold text-white ring-4 ring-[#0A52C4]/10 shadow-sm">
                     {{ strtoupper(substr($firstName, 0, 1)) }}
-                    <span class="absolute -bottom-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full border-2 border-white bg-[#F28C28] text-[9px] font-bold text-white shadow-xs">✏️</span>
+                    <span class="absolute -bottom-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full border-2 border-white bg-[#F28C28] text-navy shadow-xs"><x-icon name="edit" class="h-2.5 w-2.5" /></span>
                 </div>
                 <div class="min-w-0 flex-1">
                     <p class="truncate font-extrabold text-gray-900 text-sm leading-tight">{{ $firstName }}</p>
@@ -188,7 +188,7 @@ default => [],
                     Admin System
                     @endif
                 </span>
-                <span class="text-[10px] font-extrabold">›</span>
+                <x-icon name="chevron_right" class="h-3.5 w-3.5" />
             </a>
         </div>
 

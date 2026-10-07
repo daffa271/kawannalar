@@ -7,7 +7,7 @@
         <div>
             <div class="flex items-center gap-2 text-xs text-gray-500 mb-1">
                 <a href="{{ route('dashboard.admin') }}" class="hover:text-[#0A52C4]">Dashboard</a>
-                <span>›</span><span class="font-semibold text-gray-700">User Management · Siswa</span>
+                <x-icon name="chevron_right" class="h-3.5 w-3.5" /><span class="font-semibold text-gray-700">User Management · Siswa</span>
             </div>
             <h1 class="text-2xl font-extrabold text-gray-900">Manajemen Siswa</h1>
             <p class="mt-1 text-sm text-gray-500">Total <span class="font-bold text-gray-800">{{ $students->total() }}</span> siswa terdaftar.</p>

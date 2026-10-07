@@ -39,6 +39,8 @@ return [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
         // Chat ID grup KawanNalar. TELEGRAM_CHAT_ID tetap dibaca untuk .env lama.
         'chat_id'   => env('TELEGRAM_GROUP_CHAT_ID', env('TELEGRAM_CHAT_ID')),
+        // Tautan undangan publik grup (bukan rahasia) untuk CTA "Gabung Telegram".
+        'group_url' => 'https://t.me/+SlpIKZ3RUisyODBl',
     ],
 
 ];

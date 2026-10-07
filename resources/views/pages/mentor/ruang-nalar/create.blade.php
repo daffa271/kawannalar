@@ -14,26 +14,21 @@
             <div class="grid gap-4 sm:grid-cols-2">
                 <div><label for="subject" class="field-label">Mata Pelajaran</label><select id="subject" name="subject" required class="field-input">
                         <option value="">Pilih mata pelajaran</option>
-                        <option>Matematika</option>
-                        <option>Fisika</option>
-                        <option>Kimia</option>
-                        <option>Biologi</option>
-                        <option>UTBK TPS</option>
-                        <option>Literasi Bahasa</option>
-                        <option>Penalaran Umum</option>
+                        @foreach (\App\Models\Module::SUBJECTS as $option)
+                        <option value="{{ $option }}" @selected(old('subject') === $option)>{{ $option }}</option>
+                        @endforeach
                     </select><x-input-error :messages="$errors->get('subject')" class="field-error" /></div>
                 <div><label for="grade" class="field-label">Target Kelas</label><select id="grade" name="grade" required class="field-input">
                         <option value="">Pilih target kelas</option>
-                        <option>Kelas 10</option>
-                        <option>Kelas 11</option>
-                        <option>Kelas 12</option>
-                        <option>UTBK</option>
+                        @foreach (\App\Models\Module::GRADES as $option)
+                        <option value="{{ $option }}" @selected(old('grade') === $option)>{{ $option }}</option>
+                        @endforeach
                     </select><x-input-error :messages="$errors->get('grade')" class="field-error" /></div>
             </div>
             <div><label for="file" class="field-label">File Catatan atau Materi</label><input id="file" type="file" name="file" required accept="application/pdf,image/png,image/jpeg,.pdf,.png,.jpg,.jpeg" class="block w-full rounded-xl border border-gray-200 bg-[#F4F7FA] px-3 py-2.5 text-sm text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-[#0A52C4]/10 file:px-3 file:py-2 file:text-xs file:font-bold file:text-[#0A52C4]">
                 <p class="mt-1 text-xs text-gray-400">Format PDF, PNG, JPG atau JPEG, maksimal 25 MB.</p><x-input-error :messages="$errors->get('file')" class="field-error" />
             </div>
-            <div class="flex justify-end border-t border-gray-100 pt-5"><button type="submit" class="rounded-xl bg-[#F28C28] px-6 py-3 text-sm font-bold text-white hover:bg-[#E07D1C]">Kirim untuk Moderasi Admin</button></div>
+            <div class="flex justify-end border-t border-gray-100 pt-5"><button type="submit" class="inline-flex items-center gap-1.5 rounded-xl bg-cta px-6 py-3 text-sm font-bold text-navy transition hover:bg-cta-dark"><x-icon name="send" class="h-4 w-4" /> Kirim untuk Moderasi Admin</button></div>
         </form>
     </div>
 </x-layouts.mentor>
